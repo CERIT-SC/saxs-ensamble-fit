@@ -2,7 +2,10 @@
 
 n=`printf %02d $(($PBS_VNODENUM + 1))`
 
-foxs=/storage/brno3-cerit/home/ljocha/foxs
+# XXX: hardcoded
+
+data=/storage/brno3-cerit/home/ljocha/foxs
+foxs=/storage/brno3-cerit/home/ljocha/soft/foxs/foxs
 
 mkdir $SCRATCHDIR/$n
 cd $SCRATCHDIR/$n
@@ -20,15 +23,16 @@ ftest()
 
 date
 
-cp $foxs/mod$n.pdb .
-cp $foxs/pokus1.dat .
+# XXX: specificka jmena souboru
+cp $data/mod$n.pdb .
+cp $data/pokus1.dat .
 
 e=0.95
 
 while ftest "$e <= 1.05"; do
 	w=-2
 	while ftest "$w <= 4"; do
-		$foxs/foxs -w $w -e $e mod$n.pdb pokus1.dat
+		$foxs -w $w -e $e mod$n.pdb pokus1.dat
 		nn=`printf '%02d_%.2f_%.3f.dat' $n $w $e`
 #		mv mod${n}_pokus1.dat ${n}_${w}_${e}.dat
 		mv mod${n}_pokus1.dat $nn
@@ -38,7 +42,6 @@ while ftest "$e <= 1.05"; do
 done
 
 date
-# mereni 
 
-# mkdir -p $foxs/$n
-# cp ${n}*.dat $foxs/$n
+mkdir -p $data/$n
+cp ${n}*.dat $data/$n
