@@ -1,0 +1,165 @@
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <limits.h>
+#include <strings.h>
+
+#include <mpi.h>
+
+#include <iostream>
+
+#include "Curve.h"
+#include "C12Map.h"
+#include "BruteForce.h"
+#include "MonteCarlo.h"
+#include "STunel.h"
+
+#define FLOAT_MAX	9.99E37
+
+// Just test, disable tunelling
+#define PURE_MONTE_CARLO
+
+using namespace std;
+
+static void usage(char const *);
+
+int main(int argc, char ** argv)
+{
+
+	char	prefix[PATH_MAX] = "";
+	int	num = -1, syncsteps = 0;
+	long	maxsteps = 5000;
+	bool	debug = false, parsed = false;
+	enum { BRUTEFORCE, MONTECARLO, STUNEL }	alg = STUNEL;
+
+	char	*fmeasured, *tprefix = ".";
+
+	MinChi	*min = 0;
+
+	float	alpha = 0.1,beta = 5e-3,gamma = 500;
+
+	MPI_Init(&argc,&argv);
+
+	cout << "# ";
+	for (int i=0; i<argc; i++) cout << argv[i] << " ";
+	cout << endl;
+
+	int	opt;
+	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:")) != EOF) switch (opt) {
+		case 'n': num = atoi(optarg); break;
+		case 'm': fmeasured = optarg; break;
+		case 'l': alpha = atof(optarg); break;
+		case 'b': beta = atof(optarg); break;
+		case 'g': gamma = atof(optarg); break;
+		case 's': maxsteps = atol(optarg); break;
+		case 'd': debug = true; break;
+		case 'a': if (strcasecmp(optarg,"bruteforce") == 0) alg = BRUTEFORCE;
+				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
+				  else if (strcasecmp(optarg,"stunel")==0) alg = STUNEL;
+				  else { usage(argv[0]); return 1; }
+			  break;
+		case 'q': parsed = true; break;
+		case 'y': syncsteps = atoi(optarg); break;
+		case 't': tprefix = optarg; break;
+		default: usage(argv[0]); return 1;
+	}
+
+	if (num<=0) { usage(argv[0]); return 1; }
+
+/* maximal step length (alltogether, not per dimension) */ 
+	alpha /= sqrt(2. + num);
+
+/** MonteCarlo */
+
+/* MC scaling, 5e-3 step up accepted with 10% */
+	beta = - log(.1)/beta; 	
+
+/** StochasticTunel */
+
+/* tunnel scaling */
+//	gamma = 1;
+//
+
+	Curve	measured;
+
+	vector<C12Map>	maps;
+	maps.resize(num);
+
+	for (int i=0; i<num; i++) {
+		char	buf[PATH_MAX];
+
+		if (parsed) {
+			snprintf(buf, sizeof buf, "%s%02d.c12",prefix,i+1);
+			if (maps[i].restore(buf)) return 1;
+		}
+		else {
+			snprintf(buf,sizeof buf,"%s%02d/%02d_%%.2f_%%.3f.dat",prefix,i+1,i+1);
+			if (maps[i].load(buf)) return 1;
+		}
+	}
+	if (measured.load(fmeasured)) return 1;
+
+	switch (alg) {
+		case BRUTEFORCE:
+			BruteForce *b =	new BruteForce(measured,maps);
+			b->setStep(.01);
+			min = b;
+			break;
+		case MONTECARLO: 
+			MonteCarlo *m = new MonteCarlo(measured,maps);
+			m->setParam(alpha,beta);
+			m->setMaxSteps(maxsteps);
+			min = m;
+			break;
+		case STUNEL:
+			STunel *t = new STunel(measured,maps);
+			t->setParam(alpha,beta,gamma);
+			t->setMaxSteps(maxsteps);
+			min = t;
+			break;
+		default:
+			cerr << "algorithm " << alg << " not implemented" << endl;
+			return 1;
+	}
+
+	min->setSyncSteps(syncsteps);
+
+
+	int	rank;
+
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
+	if (debug) {
+		char	buf[PATH_MAX];
+
+		snprintf(buf,PATH_MAX,"%s/ensamble-fit_%d.trc",tprefix,rank);
+		if (min->openTrace(buf) == NULL) return 1;
+	}
+
+	min->minimize(debug);
+
+	vector<float> & best = min->getBestW();
+	float const *c = min->getBestC();
+	float chi2 = min->getBestChi2();
+	long step = min->getBestStep();
+
+	if (step > 0) {
+		cout << "[" << rank << "] best: #" << step << ": ";
+		for (int i=0; i<num; i++) cout << best[i] << " ";
+
+		cout << c[1] << " " << c[2];
+		cout << "\tchi2=" << chi2 << "\tchi=" << sqrt(chi2) << "\tc=" << c[0] << endl;
+	}
+	else {
+		cout << "[" << rank << "] best found by " << -step << endl;
+	}
+
+	MPI_Finalize();
+
+}
+
+static void usage(char const *me)
+{
+	cerr << "usage: " << me << " -n num -m measured " << endl;
+}
