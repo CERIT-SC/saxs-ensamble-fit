@@ -25,3 +25,6 @@ test-ipol: test-ipol.o Curve.o C12Map.o
 
 clean:
 	rm -f ${OBJ} ensamble-fit
+
+
+# test
