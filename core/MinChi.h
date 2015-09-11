@@ -13,6 +13,11 @@ class MinChi
 	virtual void init(void) = 0;
 	virtual bool done(void) = 0;
 
+	const static int MAX_MIN_STEPS = 1000;
+
+	vector<Curve>   interpolated;
+	Curve		merged;
+
 
 protected:
 	int	num;
@@ -62,6 +67,8 @@ public:
 
 	FILE* openTrace(const char *);
 	void writeTrace(int);
+
+	float eval(vector<float> const &wc);
 };
 
 #endif
