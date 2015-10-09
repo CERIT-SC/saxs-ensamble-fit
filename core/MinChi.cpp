@@ -14,13 +14,10 @@
 
 using namespace std;
 
-extern MinChi *global_min;
+MinChi *MinChi::inst = 0;
 
 void MinChi::minimize(int debug)
 {
-
-	global_min = this;	// XXX: fortran interface
-
 	interpolated.resize(num);
 	bool	got_best = false;
 
@@ -162,12 +159,16 @@ float MinChi::eval(vector<float> const & wc)
 	merged.mergeFrom(interpolated,ww);
 	merged.fit(measured,chi_out,c_test[0]);	// XXX: side effect on c_test
 
-	return chi_out + c12penalty(wc[num],wc[num+1]);
+	// return chi_out + c12penalty(wc[num],wc[num+1]);
+	return chi_out;
 }
 
 float MinChi::c12penalty()
 {
 	float	p = 0.;
+
+	// XXX: netusim, na co to bylo, ve step() je omezeni
+	return 0;
 
 	if (c_test[1] < alpha) p -= log(c_test[1]/alpha);
 	if (c_test[2] < alpha) p -= log(c_test[2]/alpha);

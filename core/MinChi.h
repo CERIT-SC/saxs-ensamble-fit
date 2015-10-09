@@ -2,11 +2,13 @@
 #define __MINCHI
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "C12Map.h"
 
 class MinChi
 {
+	static MinChi	*inst;
 
 	virtual bool accept(void) = 0;
 	virtual void step(void) = 0;
@@ -17,7 +19,6 @@ class MinChi
 
 	vector<Curve>   interpolated;
 	Curve		merged;
-
 
 protected:
 	int	num;
@@ -46,6 +47,8 @@ public:
 	MinChi( Curve &me, vector<C12Map> &ma): 
 		measured(me), maps(ma)
 		{
+			assert(MinChi::inst == 0);
+			MinChi::inst = this;
 			syncsteps = 0;
 			num = ma.size();
 			w_cur.resize(num);
@@ -53,6 +56,8 @@ public:
 			w_best.resize(num);
 			trace = NULL;
 		}
+
+	static MinChi *getInstance(void) { return MinChi::inst; }
 
 	void setMaps(vector<C12Map> &m) { maps = m; }
 	void setMeasured(Curve &c) { measured = c; }

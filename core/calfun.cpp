@@ -1,13 +1,19 @@
 
 #include  "MinChi.h"
 
-MinChi	*global_min;
-
 extern "C" {
 
 void calfun_(int *n, double *x, double *f)
 {
-	*f = 0.;
+	MinChi	*min = MinChi::getInstance();
+	int	nn = *n;
+
+	vector<float> w;
+	w.resize(nn);
+	for (int i=0; i<nn; i++) w[i] = x[i];
+
+	float chi2 = min->eval(w);
+	*f = chi2;
 }
 
-}
+} // extern "C"
