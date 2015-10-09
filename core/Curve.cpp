@@ -186,12 +186,11 @@ void Curve::fit(Curve const &measured, float &chi2, float &c) const
 //	cerr << "fit...... " << endl;
 	for (int i=0; i<size; i++) {
 		float sigma2 = sigma[i] * sigma[i];
-		sigma2 = .5/sigma2;
 
 		float	x = Ie[i] - c*I[i];
 		x *= x;
 
-		out += x*sigma2;
+		out += x/sigma2;
 //		cerr << x << " " << out << endl;
 	}
 	chi2 = out/size;
