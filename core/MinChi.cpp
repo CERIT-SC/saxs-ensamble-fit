@@ -96,7 +96,7 @@ void MinChi::minimize(int debug)
 
 				double	x[num+2];
 
-				int	n = num+2, npt = 2*n+1, iprint = 0, maxfun = MinChi::MAX_MIN_STEPS;
+				int	n = num+2, npt = 2*n+1, iprint = 2, maxfun = MinChi::MAX_MIN_STEPS;
 				double 	rbeg = alpha, rend = fabs(chi2_test-chi2_best)/1000.;
 
 				double	w[(npt+5)*(npt+n)+3*n*(n+5)/2];
