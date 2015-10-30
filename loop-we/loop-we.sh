@@ -6,6 +6,7 @@ n=`printf %02d $(($PBS_VNODENUM + 1))`
 
 data=/storage/brno3-cerit/home/ljocha/foxs
 foxs=/storage/brno3-cerit/home/ljocha/soft/foxs/foxs
+maxq=.5
 
 mkdir $SCRATCHDIR/$n
 cd $SCRATCHDIR/$n
@@ -32,7 +33,7 @@ e=0.95
 while ftest "$e <= 1.05"; do
 	w=-2
 	while ftest "$w <= 4"; do
-		$foxs -w $w -e $e mod$n.pdb pokus1.dat
+		$foxs -q $maxq -w $w -e $e mod$n.pdb pokus1.dat
 		nn=`printf '%02d_%.2f_%.3f.dat' $n $w $e`
 #		mv mod${n}_pokus1.dat ${n}_${w}_${e}.dat
 		mv mod${n}_pokus1.dat $nn
