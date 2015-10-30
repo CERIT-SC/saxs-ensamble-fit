@@ -38,3 +38,8 @@ void STunel::synchronize()
 
 	if (rec.idx != snd.idx) step_best = -rec.idx;
 }
+
+void STunel::best_callback() 
+{
+	tunel_cur = 1 - expf(-gamma * (chi2_cur - chi2_best));
+}

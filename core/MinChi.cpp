@@ -16,6 +16,18 @@ using namespace std;
 
 MinChi *MinChi::inst = 0;
 
+static void normalize(vector<float> & ww, int num)
+{
+	float w = 0;
+	for (int i=0; i<num; i++) w += ww[i];
+	if (w != 0.) {
+		w = 1./w;
+		for (int i=0; i<num; i++) ww[i] *= w;
+	}
+	else for (int i=0; i<num; i++) ww[i] = 1./num;
+}
+
+
 void MinChi::minimize(int debug)
 {
 	interpolated.resize(num);
@@ -83,7 +95,6 @@ void MinChi::minimize(int debug)
 
 			if (chi2_test < chi2_best) {
 /* polish the minimum with local optimization */
-				w_best = w_test;
 
 				/*
 				for (int i=0; i<3; i++) { c_best[i] = c_test[i]; }
@@ -103,6 +114,7 @@ void MinChi::minimize(int debug)
 					for (int i=0; i<num+2; i++) x[i] = w_test[i];
 					bobyqa_(&n,&npt,x,xl,xu,&rbeg,&rend, &iprint,&maxfun,w);
 					for (int i=0; i<num+2; i++) w_test[i] = x[i];
+					normalize(w_test,num);
 					chi2_best = eval(w_test);
 				}
 				else { 
@@ -110,7 +122,7 @@ void MinChi::minimize(int debug)
 					got_best = true;
 				}
 
-
+				w_best = w_test;
 				c_best[1] = w_best[num];
 				c_best[2] = w_best[num+1];
 
@@ -146,13 +158,8 @@ float MinChi::eval(vector<float> const & wc)
 	for (int i=0; i<num; i++) ww[i] = wc[i];
 
 /* normalize weights (not strictly necessary but ...) */
-	float w = 0;
-	for (int i=0; i<num; i++) w += ww[i];
-	if (w != 0.) {
-		w = 1./w;
-		for (int i=0; i<num; i++) ww[i] *= w;
-	}
-	else for (int i=0; i<num; i++) ww[i] = 1./num;
+
+	normalize(ww,num);
 
 	for (int i=0; i<num; i++) maps[i].interpolate(c1,c2,interpolated[i]);
 	

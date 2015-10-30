@@ -11,7 +11,7 @@ class STunel: public MonteCarlo {
 
 protected:
 	virtual bool accept(void);
-	virtual void best_callback(void) { tunel_cur = 0; }
+	virtual void best_callback(void); 
 	virtual void synchronize(void);
 
 public:
