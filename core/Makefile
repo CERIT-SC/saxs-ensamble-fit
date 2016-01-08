@@ -3,7 +3,7 @@ VPATH=.:../bobyqa
 CXX=mpic++
 FC=mpif77
 
-SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp MonteCarlo.cpp STunel.cpp main.cpp calfun.cpp
+SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp RandomWalk.cpp MonteCarlo.cpp STunel.cpp main.cpp calfun.cpp
 
 BOBJ:=bobyqa.o bobyqb.o prelim.o trsbox.o update.o altmov.o rescue.o
 

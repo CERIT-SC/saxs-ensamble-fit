@@ -5,4 +5,4 @@
 data=/storage/brno3-cerit/home/ljocha/foxs
 cp loop-we.sh $data
 
-pbsdsh $foxs/loop-we.sh
+pbsdsh $data/loop-we.sh

@@ -8,10 +8,12 @@
 #include <mpi.h>
 
 #include <iostream>
+#include <iomanip>
 
 #include "Curve.h"
 #include "C12Map.h"
 #include "BruteForce.h"
+#include "RandomWalk.h"
 #include "MonteCarlo.h"
 #include "STunel.h"
 
@@ -31,7 +33,7 @@ int main(int argc, char ** argv)
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false;
-	enum { BRUTEFORCE, MONTECARLO, STUNEL }	alg = STUNEL;
+	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
 
 	char	*fmeasured, *tprefix = ".";
 
@@ -55,6 +57,7 @@ int main(int argc, char ** argv)
 		case 's': maxsteps = atol(optarg); break;
 		case 'd': debug = true; break;
 		case 'a': if (strcasecmp(optarg,"bruteforce") == 0) alg = BRUTEFORCE;
+				  else if (strcasecmp(optarg,"randomwalk")==0) alg = RANDOMWALK;
 				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
 				  else if (strcasecmp(optarg,"stunel")==0) alg = STUNEL;
 				  else { usage(argv[0]); return 1; }
@@ -106,6 +109,12 @@ int main(int argc, char ** argv)
 			b->setStep(.01);
 			min = b;
 			break;
+		case RANDOMWALK: 
+			RandomWalk *r = new RandomWalk(measured,maps);
+			r->setParam(alpha);
+			r->setMaxSteps(maxsteps);
+			min = r;
+			break;
 		case MONTECARLO: 
 			MonteCarlo *m = new MonteCarlo(measured,maps);
 			m->setParam(alpha,beta);
@@ -145,8 +154,12 @@ int main(int argc, char ** argv)
 	long step = min->getBestStep();
 
 	if (step > 0) {
-		cout << "[" << rank << "] best: #" << step << ": ";
-		for (int i=0; i<num; i++) cout << best[i] << " ";
+		cout << "[" << setw(2) << rank << "] best: #" << setw(5) << step << ": " << fixed;
+		cout.precision(3);
+
+		for (int i=0; i<num; i++) 
+			if (best[i] >= 0.001)  cout << best[i] << " ";
+			else cout << "      ";
 
 		cout << c[1] << " " << c[2];
 		cout << "\tchi2=" << chi2 << "\tchi=" << sqrt(chi2) << "\tc=" << c[0] << endl;
