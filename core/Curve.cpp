@@ -13,6 +13,7 @@ using namespace std;
 Curve::Curve()
 {
 	qmin = qmax = step = 0;
+	has_data = false;
 }
 
 #if 0
@@ -67,6 +68,7 @@ void Curve::assign(vector<float> const &q, vector<float> const & I)
 	rawI = I;
 	rawErr.clear();
 	has_error = false;
+	has_data = true;
 }
 
 void Curve::assign(vector<float> const &q, vector<float> const & I, vector<float> const &err)
@@ -74,6 +76,7 @@ void Curve::assign(vector<float> const &q, vector<float> const & I, vector<float
 	assign(q,I);
 	rawErr = err;
 	has_error = true;
+	has_data = true;
 
 	scaleFromRaw();
 
@@ -127,6 +130,7 @@ int Curve::load(char const *file,bool dat)
 	in.close();
 	scaleFromRaw();
 	has_error = dat;
+	has_data = true;
 	return 0;
 } 
 
@@ -156,6 +160,7 @@ void Curve::mergeFrom(vector<Curve> const & curves,vector<float> const & weights
 		float	jw = weights[j];
 		for (int i=0; i<steps; i++) rawI[i] += jI[i] * jw;
 	}
+	has_data = true;
 }
 
 void Curve::fit(Curve const &measured, float &chi2, float &c) const

@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
 	char	prefix[PATH_MAX] = "";
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
-	bool	debug = false, parsed = false;
+	bool	debug = false, parsed = false, lazy = false;
 	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
 
 	char	*fmeasured, *tprefix = ".";
@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 	cout << endl;
 
 	int	opt;
-	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:")) != EOF) switch (opt) {
+	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:L")) != EOF) switch (opt) {
 		case 'n': num = atoi(optarg); break;
 		case 'm': fmeasured = optarg; break;
 		case 'l': alpha = atof(optarg); break;
@@ -65,6 +65,7 @@ int main(int argc, char ** argv)
 		case 'q': parsed = true; break;
 		case 'y': syncsteps = atoi(optarg); break;
 		case 't': tprefix = optarg; break;
+		case 'L': lazy = true; break;
 		default: usage(argv[0]); return 1;
 	}
 
@@ -89,10 +90,16 @@ int main(int argc, char ** argv)
 	vector<C12Map>	maps;
 	maps.resize(num);
 
+	if (measured.load(fmeasured)) return 1;
 	for (int i=0; i<num; i++) {
 		char	buf[PATH_MAX];
 
-		if (parsed) {
+		if (lazy) {
+			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
+			if (maps[i].setLazy(buf,fmeasured)) return 1;
+			maps[i].setQMax(measured.getQMax());
+		}
+		else if (parsed) {
 			snprintf(buf, sizeof buf, "%s%02d.c12",prefix,i+1);
 			if (maps[i].restore(buf)) return 1;
 		}
@@ -101,7 +108,6 @@ int main(int argc, char ** argv)
 			if (maps[i].load(buf)) return 1;
 		}
 	}
-	if (measured.load(fmeasured)) return 1;
 
 	switch (alg) {
 		case BRUTEFORCE:

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
@@ -7,13 +8,18 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+
 #include <fcntl.h>
 
 #include <iostream>
+#include <fstream>
 
 #include "C12Map.h"
 
 // #define DEBUG_IPOL
+
+char const *C12Map::FOXS;
 
 C12Map::C12Map()
 {
@@ -26,9 +32,41 @@ C12Map::C12Map()
 
 /* FIXME: just test */
 //	c1steps = 5; c2steps = 13;
-
+//
 	setRange(c1range[0],c1range[1],c1steps,
 		c2range[0],c2range[1],c2steps);
+	is_lazy = false;
+	qmax = 0.5;
+
+	FOXS = "foxs";
+}
+
+int C12Map::setLazy(char const *p,char const *d)
+{
+	ifstream	in;
+	in.open(p);
+	if (in.fail()) {
+		cerr << "open: " << p << endl;
+		return 1;
+	}
+	in.close();
+
+	in.open(d);
+	if (in.fail()) {
+		cerr << "open: " << d << endl;
+		return 1;
+	}
+	in.close();
+
+	is_lazy = true;
+	lazy_pdb = p;
+	lazy_profile = d;
+
+	curves.resize(c1samples);
+	for (int ic1 = 0; ic1 < c1samples; ic1++)
+		curves[ic1].resize(c2samples);
+
+	return 0;
 }
 
 void C12Map::setRange(float min1,float max1,int samples1,
@@ -80,6 +118,13 @@ void C12Map::interpolate(float c1, float c2, Curve& out)
 		{ (1.-wc1)*(1.-wc2), (1.-wc1)*wc2 },
 		{ wc1*(1.-wc2), wc1*wc2 }
 	};
+
+	if (is_lazy) {
+		if (! curves[ic1][ic2].hasData()) lazyCurve(ic1,ic2);
+		if (! curves[ic1+1][ic2].hasData()) lazyCurve(ic1+1,ic2);
+		if (! curves[ic1][ic2+1].hasData()) lazyCurve(ic1,ic2+1);
+		if (! curves[ic1+1][ic2+1].hasData()) lazyCurve(ic1+1,ic2+1);
+	}
 
 	vector<float> const * oldI[2][2] = {
 		{ &curves[ic1][ic2].getI(), &curves[ic1][ic2+1].getI() },
@@ -222,6 +267,87 @@ int C12Map::restore(char const *fname)
 	close(f);
 	return 0;
 }
+
+static void filetodir(const char *src,const char *dir,const char *dst)
+{
+
+	char	dname[PATH_MAX];
+	sprintf(dname,"%s/%s",dir,dst);
+
+	ifstream s(src); assert(!s.fail());
+	ofstream d(dname); assert(!d.fail());
+
+	s.seekg(0,s.end);
+	long size = s.tellg();
+	s.seekg(0);
+
+	char	*buf = new char[size];
+
+	s.read(buf,size); assert(! s.fail());
+	d.write(buf,size); assert(! d.fail());
+
+	s.close();
+	d.close();
+	delete [] buf;
+}
+
+/* XXX: call external foxs binary. 
+ * Should be replaced with just the linked-in computation
+ */
+
+void C12Map::lazyCurve(int ic1,int ic2)
+{
+	float	c1 = c1min + ic1*c1step,
+		c2 = c2min + ic2*c2step;
+
+	char * dirname = NULL;
+	do {
+		free(dirname);
+		dirname = tempnam(NULL,"saxs");
+	}
+	while (mkdir(dirname,0700));	// XXX: may loop forever
+
+	pid_t	child = fork();
+	int	stat;
+
+	assert(child >= 0);
+
+	char	qmax_s[20],e_s[20],w_s[20];
+	sprintf(qmax_s,"%f",qmax);
+	sprintf(e_s,"%f",c1);
+	sprintf(w_s,"%f",c2);
+
+	if (child) {
+		waitpid(child,&stat,0);
+		assert(WIFEXITED(stat) && WEXITSTATUS(stat) == 0);	// XXX
+	}
+	else {
+		filetodir(lazy_pdb,dirname,"model.pdb");
+		filetodir(lazy_profile,dirname,"profile.dat");
+
+		chdir(dirname);
+
+		execlp(FOXS,FOXS,
+			"-q",qmax_s,
+			"-e",e_s,
+			"-w",w_s,
+			"model.pdb",
+			"profile.dat",
+			NULL
+		      );
+		perror("exec()");
+		exit(1);
+	}
+
+	char	outname[PATH_MAX];
+
+	sprintf(outname,"%s/model_profile.dat",dirname);
+	curves[ic1][ic2].load(outname,false);
+
+	/* TODO: cleanup */
+	free(dirname);
+}
+
 
 
 #if 0

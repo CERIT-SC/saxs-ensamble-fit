@@ -8,7 +8,7 @@ using namespace std;
 class Curve
 {
 	vector<float>	rawQ, rawI, rawErr;
-	bool	has_error;
+	bool	has_error, has_data;
 
 	float	qmin, qmax, step;
 //	float	*q;
@@ -41,7 +41,10 @@ public:
 	vector<float> const & getErr(void) const { return rawErr; }
 
 	bool hasErr(void) const { return has_error; }
+	bool hasData(void) const { return has_data; }
 	int getSize(void) const { return rawQ.size(); }
+
+	float getQMax(void) const { return qmax; }
 };
 
 #endif

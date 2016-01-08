@@ -10,14 +10,25 @@ class C12Map
 	float	c2min,c2max;
 	int	c1samples, c2samples;
 	float	c1step,c2step;
+	float	qmax;
 
 	std::vector<std::vector<Curve> >	curves;
+
+	bool	is_lazy;
+	char const	*lazy_pdb,*lazy_profile;
+
+	void lazyCurve(int ic1,int ic2);
+
+	static char const *FOXS;
 
 public:
 	C12Map();
 
+	int setLazy(char const *pdb,char const *dat);
+
 	void setRange(float min1,float max1,int samples1,
 		float min2, float max2, int samples2);
+	void setQMax(float q) { qmax = q; }
 	int load(char const *tmpl);
 	void interpolate(float c1, float c2, Curve& out);
 
