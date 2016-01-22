@@ -1,0 +1,41 @@
+# vim: ft=sh
+
+# base directory
+REQUESTS_DIR="/home/saxsfit/requests"
+
+CHECK_FOR_REQUESTS_INTERVAL="10"
+
+# logging settings
+SYSLOG_FACILITY="local7"
+SYSLOG_TAG="saxsfit"
+
+# clean after successful job's execution
+CLEAN_AFTER_SUCCESS="true"
+
+# mail admin on server error
+MAIL_ON_ERROR="false"
+SERVER_ADMIN_EMAIL="tom@krab1k.net"
+
+# storage related stuff
+KERBEROS_PRINCIPAL="krab1k@META"
+KEYTAB_FILE="/home/saxsfit/krab1k.keytab"
+
+STORAGE_USER="krab1k"
+STORAGE_SERVER="storage-brno6.metacentrum.cz"
+STORAGE_DIR="/home/krab1k/saxsfit/requests"
+STORAGE_FULL_DIR="/storage/brno6/home/krab1k/saxsfit"
+
+# settings for foxs
+FOXS_QSUB_ARGS="-l nodes=1:ppn=1 -l walltime=1h -l mem=1gb -l scratch=1gb -q @wagap.cerit-sc.cz"
+FOXS_JOBS_CHECK_INTERVAL="60"
+
+FOXS_E_MIN="0.95"
+FOXS_E_MAX="1.05"
+FOXS_E_STEP="0.005"
+FOXS_W_MIN="-2"
+FOXS_W_MAX="4"
+FOXS_W_STEP="0.05"
+
+# setttings for the optimization procedure
+OPTIM_QSUB_ARGS="-l nodes=1:ppn=2 -l walltime=1h -l mem=4gb -l scratch=1gb -q @wagap.cerit-sc.cz"
+OPTIM_JOBS_CHECK_INTERVAL="60"
