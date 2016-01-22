@@ -1,7 +1,7 @@
 # vim: ft=sh
 
 # base directory
-REQUESTS_DIR="/home/saxsfit/requests"
+REQUESTS_DIR="/var/www/SaxsExperiments"
 
 CHECK_FOR_REQUESTS_INTERVAL="10"
 
@@ -14,16 +14,18 @@ CLEAN_AFTER_SUCCESS="true"
 
 # mail admin on server error
 MAIL_ON_ERROR="false"
-SERVER_ADMIN_EMAIL="tom@krab1k.net"
+SERVER_ADMIN_EMAIL="ljocha@ics.muni.cz"
 
 # storage related stuff
-KERBEROS_PRINCIPAL="krab1k@META"
-KEYTAB_FILE="/home/saxsfit/krab1k.keytab"
+#KERBEROS_PRINCIPAL="krab1k@META"
+#KEYTAB_FILE="/home/saxsfit/krab1k.keytab"
+KERBEROS_PRINCIPAL="ljocha@META"
+KEYTAB_FILE="/home/saxsfit/ljocha.keytab"
 
-STORAGE_USER="krab1k"
+STORAGE_USER="ljocha"
 STORAGE_SERVER="storage-brno6.metacentrum.cz"
-STORAGE_DIR="/home/krab1k/saxsfit/requests"
-STORAGE_FULL_DIR="/storage/brno6/home/krab1k/saxsfit"
+STORAGE_DIR="/home/ljocha/saxsfit"
+STORAGE_FULL_DIR="/storage/brno6/home/ljocha/saxsfit"
 
 # settings for foxs
 FOXS_QSUB_ARGS="-l nodes=1:ppn=1 -l walltime=1h -l mem=1gb -l scratch=1gb -q @wagap.cerit-sc.cz"
@@ -37,5 +39,10 @@ FOXS_W_MAX="4"
 FOXS_W_STEP="0.05"
 
 # setttings for the optimization procedure
-OPTIM_QSUB_ARGS="-l nodes=1:ppn=2 -l walltime=1h -l mem=4gb -l scratch=1gb -q @wagap.cerit-sc.cz"
+OPTIM_QSUB_ARGS="-l nodes=1:ppn=8 -l walltime=1h -l mem=4gb -l scratch=1gb -q @wagap.cerit-sc.cz"
 OPTIM_JOBS_CHECK_INTERVAL="60"
+
+
+STRUCTURES_FILE="final.pdb"
+SAXS_DATA="exp_data.dat"
+
