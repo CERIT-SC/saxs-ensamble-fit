@@ -29,7 +29,7 @@ static void usage(char const *);
 int main(int argc, char ** argv)
 {
 
-	char	prefix[PATH_MAX] = "";
+	char	*prefix = "";
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 	cout << endl;
 
 	int	opt;
-	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:L")) != EOF) switch (opt) {
+	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:Lp:")) != EOF) switch (opt) {
 		case 'n': num = atoi(optarg); break;
 		case 'm': fmeasured = optarg; break;
 		case 'l': alpha = atof(optarg); break;
@@ -66,10 +66,12 @@ int main(int argc, char ** argv)
 		case 'y': syncsteps = atoi(optarg); break;
 		case 't': tprefix = optarg; break;
 		case 'L': lazy = true; break;
+		case 'p': prefix = optarg; break;
 		default: usage(argv[0]); return 1;
 	}
 
 	if (num<=0) { usage(argv[0]); return 1; }
+	assert(num < 100); /* XXX: hardcoded %02d elsewhere */
 
 /* maximal step length (alltogether, not per dimension) */ 
 	alpha /= sqrt(2. + num);
