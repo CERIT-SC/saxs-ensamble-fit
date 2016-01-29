@@ -7,6 +7,8 @@
 #include <math.h>
 #include <mpi.h>
 #include <iostream>
+#include <fstream>
+
 
 #include "bobyqa.h"
 
@@ -140,7 +142,21 @@ void MinChi::minimize(int debug)
 		}
 		// else if (debug) cout << "R";
 
-		if (syncsteps && steps % syncsteps == 0) synchronize();
+		if (syncsteps && steps % syncsteps == 0) {
+			synchronize();
+
+			if (rank == 0) {
+				std::ofstream stat;
+				stat.open("progress.tmp",std::ofstream::trunc);
+				stat << "step: " << steps << std::endl;
+				stat << "c12: " << c_best[1] << " " << c_best[2] << endl;
+				stat << "weights: ";
+				for (int i = 0; i<num; i++) stat << w_best[i] << " ";
+				stat << endl;
+				stat.close();
+				rename("progress.tmp","progress.dat");
+			}
+		}
 
 		// if (debug) cout << "\tchi2=" << chi2_test << "\tchi=" << sqrt(chi2_test) << "\tc=" << c_cur[0] << endl;
 		// XXX: v pripade 'B' zapise taky jen current, tj. odkud se optimalizovalo
