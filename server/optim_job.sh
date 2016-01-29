@@ -24,7 +24,9 @@ cd "${SCRATCHDIR}" || exit 1
 
 structures_count="$(find . -name '*.pdb' | wc -l)"
 
-PATH=.:$PATH
+PATH=${SCRATCHDIR}:$PATH
+TMPDIR=${SCRATCHDIR}
+export TMPDIR
 mpirun ./ensamble-fit -n "${structures_count}" -m saxs.dat -s "${OPTIM_STEPS}" -y "${OPTIM_SYNC_STEPS}" -l "${OPTIM_PARAM_ALPHA}" -b "${OPTIM_PARAM_BETA}" -g "${OPTIM_PARAM_GAMMA}"  -L -p structure00 >> "${request_dir}/results"
 retval="$?"
 
