@@ -13,6 +13,7 @@ protected:
 	virtual void step(void);
 	virtual bool done(void) { return steps >= max_steps; }
 	virtual bool accept(void) { return true; }
+	virtual bool polish(void) { return true; }
 
 public:
 	RandomWalk(Curve &me, vector<C12Map> &ma) : MinChi(me, ma) {};

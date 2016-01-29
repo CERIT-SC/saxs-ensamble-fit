@@ -44,7 +44,7 @@ void MinChi::minimize(int debug)
 	double xu[num+2],xl[num+2];
 	for (int i=0; i<num+2; i++) {
 		xl[i] = 0.;
-		xu[i] = 1.;
+		xu[i] = 0.99999;
 	}
 
 	int	rank;
@@ -58,7 +58,7 @@ void MinChi::minimize(int debug)
 		w_test[num] = c_test[1];
 		w_test[num+1] = c_test[2];
 
-		chi2_test = eval(w_test) - c12penalty();
+		chi2_test = eval(w_test); // - c12penalty();
 
 #if 0
 /* denormalize c1,c2 */
@@ -95,46 +95,42 @@ void MinChi::minimize(int debug)
 			for (int i=0; i<3; i++) { c_cur[i] = c_test[i]; }
 			chi2_cur = chi2_test;
 
-			if (chi2_test < chi2_best) {
+			if (!got_best) {
+				got_best = true;
+				chi2_best = 1.01 * chi2_test;
+			}
+
+			if (polish()) {
 /* polish the minimum with local optimization */
-
-				/*
-				for (int i=0; i<3; i++) { c_best[i] = c_test[i]; }
-				chi2_best = chi2_test;
-
-				*/
 
 				double	x[num+2];
 
 				int	n = num+2, npt = 2*n+1, iprint = /* 2 */ 0, maxfun = MinChi::MAX_MIN_STEPS;
-				double 	rbeg = alpha, rend = fabs(chi2_test-chi2_best)/1000.;
+				double 	rbeg = alpha, rend = fabs(chi2_test-chi2_best)/1000.; /* XXX: may not work well with randomwalk */
 
 				double	w[(npt+5)*(npt+n)+3*n*(n+5)/2];
 
-/* TODO: nastrel, jeste overit */
-				if (got_best) {
-					for (int i=0; i<num+2; i++) x[i] = w_test[i];
-					bobyqa_(&n,&npt,x,xl,xu,&rbeg,&rend, &iprint,&maxfun,w);
-					for (int i=0; i<num+2; i++) w_test[i] = x[i];
-					normalize(w_test,num);
-					chi2_best = eval(w_test);
-				}
-				else { 
-					chi2_best = chi2_test; 
-					got_best = true;
-				}
+				for (int i=0; i<num+2; i++) x[i] = w_test[i];
+				bobyqa_(&n,&npt,x,xl,xu,&rbeg,&rend, &iprint,&maxfun,w);
+				for (int i=0; i<num+2; i++) w_test[i] = x[i];
+				normalize(w_test,num);
+				float chi2_polished = eval(w_test);
 
-				w_best = w_test;
-				c_best[1] = w_best[num];
-				c_best[2] = w_best[num+1];
-
-				step_best = steps;
-				best_callback();
+				if (chi2_polished < chi2_best) {
+					chi2_best = chi2_polished;
+					w_best = w_test;
+					c_best[1] = w_best[num];
+					c_best[2] = w_best[num+1];
+	
+					step_best = steps;
+					best_callback();
 
 				// w_cur = w_best;	// XXX: je to k necemu nebo spis na skodu?
 				// chi2_cur = chi2_best;
 
-				type = 'B';
+					type = 'B';
+				}
+				else type = 'A';
 			}
 			//else if (debug) cout << "A";
 			else type = 'A';

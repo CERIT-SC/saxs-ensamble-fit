@@ -13,14 +13,15 @@ int main(int argc, char **argv)
 {
 	long	step;
 	bool	getchi = false;
-	int 	type,num,opt;
+	int 	type,num,opt,wi = -1;
 
-	while ((opt = getopt(argc,argv,"n:abrc")) != EOF) switch (opt) {
+	while ((opt = getopt(argc,argv,"w:n:abrc")) != EOF) switch (opt) {
 		case 'a': type = 'A'; break;
 		case 'b': type = 'B'; break;
 		case 'r': type = 'R'; break;
 		case 'c': getchi = true; break;
 		case 'n': num = atoi(optarg); break;
+		case 'w': wi = atoi(optarg); break;
 	}
 
 	int	trace = open(argv[optind],O_RDONLY,0);
@@ -43,7 +44,9 @@ int main(int argc, char **argv)
 
 		if (s.s == type) {
 			cout << step << ": ";
-			if (getchi) cout << s.chi2 << endl;
+			if (getchi) cout << s.chi2 << " ";
+			if (wi >= 0) cout << w[wi] << " "; 
+			cout << endl;
 		}
 	}
 }
