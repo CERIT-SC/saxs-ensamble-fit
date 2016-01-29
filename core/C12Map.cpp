@@ -312,7 +312,7 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 	assert(child >= 0);
 
-	char	qmax_s[20],e_s[20],w_s[20];
+	char	qmax_s[20],e_s[20],w_s[20],buf[500];
 	sprintf(qmax_s,"%f",qmax);
 	sprintf(e_s,"%f",c1);
 	sprintf(w_s,"%f",c2);
@@ -327,14 +327,15 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 		chdir(dirname);
 
-		int	log = open("foxs.log",O_CREAT|O_TRUNC,0644);
-		FILE	*flog = fdopen(log,"w");
-		fprintf(flog,"# %s -q %s -e %s -w %s model.pdb profile.dat\n\n",
+		int	logfile = open("foxs.log",O_WRONLY|O_CREAT|O_TRUNC,0644);
+		int	len = sprintf(buf,"# %s -q %s -e %s -w %s model.pdb profile.dat\n\n",
 				FOXS,qmax_s,e_s,w_s);
-		fflush(flog);
-		dup2(log,1);
-		dup2(log,2);
-		close(log);
+
+		write(logfile,buf,len);
+
+		dup2(logfile,1);
+		dup2(logfile,2);
+		close(logfile);
 
 		execlp(FOXS,FOXS,
 			"-q",qmax_s,

@@ -10,6 +10,7 @@ BOBJ:=bobyqa.o bobyqb.o prelim.o trsbox.o update.o altmov.o rescue.o
 OBJ:=${SRC:.cpp=.o}  ${BOBJ}
 
 CXXFLAGS=-g3 ${OPT}
+FFLAGS=-g3 ${OPT}
 
 default: ensamble-fit parse-map extract-trace
 
