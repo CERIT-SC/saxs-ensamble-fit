@@ -39,7 +39,7 @@ FOXS_W_MAX="4"
 FOXS_W_STEP="0.05"
 
 # setttings for the optimization procedure
-OPTIM_QSUB_ARGS="-l nodes=1:ppn=8 -l walltime=1h -l mem=4gb -l scratch=1gb -q @wagap.cerit-sc.cz"
+OPTIM_QSUB_ARGS="-l nodes=1:ppn=8:^debian60 -l walltime=1h -l mem=4gb -l scratch=1gb -q @wagap.cerit-sc.cz"
 OPTIM_JOBS_CHECK_INTERVAL="60"
 
 
