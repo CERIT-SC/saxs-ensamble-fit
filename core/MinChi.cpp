@@ -214,7 +214,7 @@ void MinChi::writeTrace(int type)
 	fwrite(&(w_test[0]),sizeof (w_test[0]),num,trace);
 	s.c1 = c_test[1];
 	s.c2 = c_test[2];
-	s.chi2 = chi2_test;
+	s.chi2 = type == 'B' ? chi2_best : chi2_test;
 	s.s = type;
 	fwrite(&s,sizeof s,1,trace);
 }
