@@ -48,3 +48,34 @@ exit_error() {
 
 	exit "${error_code}"
 }
+
+update_results() {
+	file=$1
+	field=$2
+	value=$3
+	found=0
+
+	rm ${file}.tmp
+	while read line; do
+		if echo "$line" | grep -q "^${field}:" 2>/dev/null; then
+			echo "$field: $value" >>${file}.tmp
+			found=1
+		else
+			echo $line >>${file}.tmp
+		fi
+
+	done <"$file"
+
+	if [ $found -eq 0 ]; then 
+		echo "$field: $value" >>${file}.tmp
+	fi
+
+	mv -f ${file}.tmp $file
+}
+
+extract_param() {
+	file=$1
+	param=$2
+
+	grep "^$param:" $file | sed "s/^$param: *//"
+}

@@ -14,6 +14,15 @@ request_dir="${REQUESTS_DIR}/${request_id}"
 
 # read request's config
 request_config="${request_dir}/config.request"
+
+request_param="${request_dir}/params.txt"
+
+echo OPTIM_STEPS=$(extract_param $request_param calcSteps) >>${request_config}
+echo OPTIM_SYNC_STEPS=$(extract_param $request_param stepsBetweenSync) >>${request_config}
+echo OPTIM_PARAM_ALPHA=$(extract_param $request_param alpha) >>${request_config}
+echo OPTIM_PARAM_BETA=$(extract_param $request_param beta) >>${request_config}
+echo OPTIM_PARAM_GAMMA=$(extract_param $request_param gama) >>${request_config}
+
 source "${request_config}"
 
 workdir="${request_dir}/workdir"
@@ -21,11 +30,11 @@ mkdir "${workdir}"
 mkdir "${workdir}/structures"
 
 # copy SAXS data
-saxs_data="${request_dir}/input/${SAXS_DATA}"
+saxs_data="${request_dir}/${SAXS_DATA}"
 cp "${saxs_data}" "${workdir}/saxs.dat"
 
 # extract NMR structures
-structures_file="${request_dir}/input/${STRUCTURES_FILE}"
+structures_file="${request_dir}/${STRUCTURES_FILE}"
 filetype="$(file -ib "${structures_file}" | sed 's/;.*//')"
 case "${filetype}" in
 
@@ -77,6 +86,7 @@ rmdir "${tmpdir}"
 structures_count="$(find "${workdir}/structures/" -name '*.pdb' | wc -l)"
 entries_count=$((structures_count + 3))
 printf "%${entries_count}s" | sed "s/ /0\.0000 /g" | sed "s/$/\n/" > "${request_dir}/results"
+update_results ${request_dir}/result.dat weights "`printf "%${entries_count}s" | sed "s/ /0\.0000, /g" | sed "s/$/\n/" `"
 shopt -u nullglob
 
 exit "${RETURN_OK}"

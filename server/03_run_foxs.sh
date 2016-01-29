@@ -1,6 +1,10 @@
 #!/bin/bash
 set -u
 
+# XXX: this phase is not required anymore
+
+exit "${RETURN_OK}"
+
 source common
 source config.server
 

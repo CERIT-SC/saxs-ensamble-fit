@@ -20,8 +20,15 @@ if ! ssh "${STORAGE_USER}@${STORAGE_SERVER}" mkdir -pm 700 "saxsfit/requests/${r
 	exit_error "${RETURN_SERVER_ERROR}" "Cannot create request directory on the storage"
 fi
  
-if ! scp -qr "${request_dir}/config.request" "${request_dir}/results" "${request_dir}/workdir" "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/${request_id}"; then
+
+if ! scp -qr "${request_dir}/config.request" "${request_dir}/results" "${request_dir}/workdir" "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}"; then
 	exit_error "${RETURN_SERVER_ERROR}" "Cannot copy files to the storage"
+fi
+
+if ! scp -q config.server "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/config.server.$$"; then
+	exit_error "${RETURN_SERVER_ERROR}" "Cannot copy files to the storage"
+else
+	ssh -q "${STORAGE_USER}@${STORAGE_SERVER}" mv -f ${STORAGE_DIR}/config.server.$$ ${STORAGE_DIR}/config.server
 fi
 
 exit "${RETURN_OK}"

@@ -327,6 +327,15 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 		chdir(dirname);
 
+		int	log = open("foxs.log",O_CREAT|O_TRUNC,0644);
+		FILE	*flog = fdopen(log,"w");
+		fprintf(flog,"# %s -q %s -e %s -w %s model.pdb profile.dat\n\n",
+				FOXS,qmax_s,e_s,w_s);
+		fflush(flog);
+		dup2(log,1);
+		dup2(log,2);
+		close(log);
+
 		execlp(FOXS,FOXS,
 			"-q",qmax_s,
 			"-e",e_s,
