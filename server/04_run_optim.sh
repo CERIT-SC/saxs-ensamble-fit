@@ -34,6 +34,7 @@ while true; do
 	if scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/progress.dat" .; then
 		scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/ComputedCurves.tar" .
 		tar xf ComputedCurves.tar
+		chmod g+r ComputedCurves/*
 		set -- `grep '^step:' progress.dat`
 		progress=$((100 * $2 / $OPTIM_STEPS))
 		update_results "${request_dir}/result.dat" progress $progress
