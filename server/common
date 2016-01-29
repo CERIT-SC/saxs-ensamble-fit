@@ -50,9 +50,9 @@ exit_error() {
 }
 
 update_results() {
-	file=$1
-	field=$2
-	value=$3
+	file="$1"
+	field="$2"
+	value="$3"
 	found=0
 
 	rm ${file}.tmp
