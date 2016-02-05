@@ -1,16 +1,16 @@
 #!/bin/sh
 
+test $f "$1" || { echo "$1:" cannot source; exit 1; }
+. $1
+
 n=`printf %02d $(($PBS_VNODENUM + 1))`
 
 # XXX: hardcoded
 
-data=/storage/brno3-cerit/home/ljocha/foxs
-foxs=/storage/brno3-cerit/home/ljocha/soft/foxs/foxs
-maxq=.5
-measured=measured.dat
 
 mkdir $SCRATCHDIR/$n
 cd $SCRATCHDIR/$n
+rm -f $n.out $n.err
 
 feval()
 {
@@ -23,7 +23,7 @@ ftest()
 	test $r = 1
 }
 
-date
+date >>$n.out
 
 # XXX: specificka jmena souboru
 cp $data/mod$n.pdb .
@@ -34,7 +34,9 @@ e=0.95
 while ftest "$e <= 1.05"; do
 	w=-2
 	while ftest "$w <= 4"; do
-		$foxs -q $maxq -w $w -e $e mod$n.pdb $measured
+		echo '***' $foxs -q $maxq -w $w -e $e mod$n.pdb $measured >>$n.out 
+		echo '***' $foxs -q $maxq -w $w -e $e mod$n.pdb $measured >>$n.err 
+		$foxs -q $maxq -w $w -e $e mod$n.pdb $measured 2>>$n.err >>$n.out
 		nn=`printf '%02d_%.2f_%.3f.dat' $n $w $e`
 #		mv mod${n}_pokus1.dat ${n}_${w}_${e}.dat
 		mv mod${n}_${measured} $nn
@@ -43,7 +45,13 @@ while ftest "$e <= 1.05"; do
 	e=`feval $e + 0.005`
 done
 
-date
 
-mkdir -p $data/$n
-cp ${n}*.dat $data/$n
+cd $SCRATCHDIR
+$parsemap -n $n 2>>$n.err
+
+date >>$n.out
+
+# mkdir -p $data/$n
+# cp ${n}*.dat $data/$n
+cp $n.c12 $n.err $n.out $data
+
