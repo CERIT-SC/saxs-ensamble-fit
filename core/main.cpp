@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <strings.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <mpi.h>
 
@@ -152,6 +154,7 @@ int main(int argc, char ** argv)
 	if (debug) {
 		char	buf[PATH_MAX];
 
+		mkdir(tprefix,0755);
 		snprintf(buf,PATH_MAX,"%s/ensamble-fit_%d.trc",tprefix,rank);
 		if (min->openTrace(buf) == NULL) return 1;
 	}

@@ -11,6 +11,7 @@ fi
 
 request_id=$1
 request_dir="${REQUESTS_DIR}/${request_id}" 
+source ${request_dir}/config.request
 
 # renew kerberos ticket
 kinit -R "${KERBEROS_PRINCIPAL}"
@@ -22,11 +23,23 @@ job_id="$(qsub "${qsub_options[@]}")"
 
 log_info "Submitted to PBS: saxsfit[${request_id}:optim_job] (${job_id})"
 
+cd $request_dir
 while true; do
 	job_state="$(qstat -f "${job_id}" | grep "job_state" | sed 's/.*= //')"
 
-	if ! ssh "${STORAGE_USER}@${STORAGE_SERVER}" "cat ${STORAGE_DIR}/${request_id}/results" | tail -1 > "${request_dir}/results"; then
-		exit_error "${RETURN_SERVER_ERROR}" "Cannot obtain results from the storage"
+#	if ! ssh "${STORAGE_USER}@${STORAGE_SERVER}" "cat ${STORAGE_DIR}/${request_id}/results" | tail -1 > "${request_dir}/results"; then
+#		exit_error "${RETURN_SERVER_ERROR}" "Cannot obtain results from the storage"
+#	fi
+
+	if scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/progress.dat" .; then
+		scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/ComputedCurves.tar" .
+		tar xf ComputedCurves.tar
+		chmod g+r ComputedCurves/*
+		set -- `grep '^step:' progress.dat`
+		progress=$((100 * $2 / $OPTIM_STEPS))
+		update_results "${request_dir}/result.dat" progress $progress
+		weights=`grep '^weights:' progress.dat | sed 's/weights: //; s/ /, /g'`
+		update_results "${request_dir}/result.dat" weights "$weights"
 	fi
 
 	if [ "${job_state}" = "C" ]; then

@@ -15,6 +15,8 @@ class MinChi
 	virtual void init(void) = 0;
 	virtual bool done(void) = 0;
 
+	virtual bool polish(void) { return chi2_test < chi2_best; }
+
 	const static int MAX_MIN_STEPS = 1000;
 
 	vector<Curve>   interpolated;
