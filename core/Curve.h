@@ -30,6 +30,7 @@ public:
 	void	assign(vector<float> const &q, vector<float> const & I);
 
 	int	checkScale(Curve const &ref) const;
+	void	alignScale(Curve const & ref);
 
 	void	mergeFrom(vector<Curve> const &curves,vector<float> const & weights);
 

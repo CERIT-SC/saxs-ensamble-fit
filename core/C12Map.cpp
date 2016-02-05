@@ -360,20 +360,13 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 
 
-#if 0
 void C12Map::alignScale(Curve const &ref)
 {
 	float	qmin, qmax;
 	int	steps;
 
-	ref.getScale(qmin,qmax,steps);
-
-	for (int ic1 = 0; ic1 < c1steps; ic1++)
-		for (int ic2 = 0; ic2 < c2steps; ic2++)
-			if (! curves[ic1][ic2].checkScale(ref)) 
-				curves[ic1][ic2].setScale(qmin,qmax,steps);
+	for (int ic1 = 0; ic1 < c1samples; ic1++)
+		for (int ic2 = 0; ic2 < c2samples; ic2++)
+			curves[ic1][ic2].alignScale(ref);
 }
-
-#endif
-
 

@@ -201,4 +201,27 @@ void Curve::fit(Curve const &measured, float &chi2, float &c) const
 	chi2 = out/size;
 }
 
+void Curve::alignScale(Curve const &ref)
+{
+	assert(!has_error);
 
+	int	newSize = ref.getSize(), size=getSize();
+	vector<float>	newI(newSize);
+	vector<float> const & refQ = ref.getQ();
+
+	int	iq = 0;
+	for (int i=0; i<newSize; i++) {
+		float	q = refQ[i];
+		for (; iq<size && rawQ[iq]<q; iq++);	
+		if (iq==0 || iq == size) abort();	/* XXX: will not happen frequently */
+
+		float	w = (q - rawQ[iq-1]) / (rawQ[iq] - rawQ[iq-1]);
+
+		newI[i] = (1.-w) * rawI[iq-1] + w * rawI[iq];
+	}
+
+	rawQ = ref.getQ();
+	rawI = newI;
+
+	scaleFromRaw();
+}
