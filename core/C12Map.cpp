@@ -223,7 +223,10 @@ int C12Map::dump(char const *fname)
 int C12Map::restore(char const *fname)
 {
 	int	f = open(fname,O_RDONLY,0);
-	if (f<0) return errno;
+	if (f<0) {
+		cerr << fname << ": " << strerror(errno) << endl;
+		return errno;
+	}
 
 	int	n,e;
 
