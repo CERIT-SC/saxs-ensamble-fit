@@ -37,7 +37,7 @@ int main(int argc, char ** argv)
 	bool	debug = false, parsed = false, lazy = false;
 	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
 
-	char	*fmeasured, *tprefix = ".";
+	char	*fmeasured = 0, *tprefix = ".";
 
 	MinChi	*min = 0;
 
@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
 		default: usage(argv[0]); return 1;
 	}
 
-	if (num<=0) { usage(argv[0]); return 1; }
+	if (num<=0 || !fmeasured) { usage(argv[0]); return 1; }
 	assert(num < 100); /* XXX: hardcoded %02d elsewhere */
 
 /* maximal step length (alltogether, not per dimension) */ 
@@ -116,29 +116,33 @@ int main(int argc, char ** argv)
 	}
 
 	switch (alg) {
-		case BRUTEFORCE:
+		case BRUTEFORCE: {
 			BruteForce *b =	new BruteForce(measured,maps);
 			b->setStep(.01);
 			min = b;
 			break;
-		case RANDOMWALK: 
+		}
+		case RANDOMWALK: {
 			RandomWalk *r = new RandomWalk(measured,maps);
 			r->setParam(alpha);
 			r->setMaxSteps(maxsteps);
 			min = r;
 			break;
-		case MONTECARLO: 
+		}
+		case MONTECARLO: {
 			MonteCarlo *m = new MonteCarlo(measured,maps);
 			m->setParam(alpha,beta);
 			m->setMaxSteps(maxsteps);
 			min = m;
 			break;
-		case STUNEL:
+		}
+		case STUNEL: {
 			STunel *t = new STunel(measured,maps);
 			t->setParam(alpha,beta,gamma);
 			t->setMaxSteps(maxsteps);
 			min = t;
 			break;
+		}
 		default:
 			cerr << "algorithm " << alg << " not implemented" << endl;
 			return 1;
@@ -161,6 +165,7 @@ int main(int argc, char ** argv)
 
 	min->minimize(debug);
 
+/* replaced by "result" dump
 	vector<float> & best = min->getBestW();
 	float const *c = min->getBestC();
 	float chi2 = min->getBestChi2();
@@ -180,6 +185,7 @@ int main(int argc, char ** argv)
 	else {
 		cout << "[" << rank << "] best found by " << -step << endl;
 	}
+*/
 
 	MPI_Finalize();
 

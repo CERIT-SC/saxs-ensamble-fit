@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "C12Map.h"
+#include "Result.h"
 
 class MinChi
 {
@@ -15,7 +16,7 @@ class MinChi
 	virtual void init(void) = 0;
 	virtual bool done(void) = 0;
 
-	virtual bool polish(void) { return chi2_test < chi2_best; }
+	virtual bool polish(void) { return chi2_test < results.getMinChi2(); }
 
 	const static int MAX_MIN_STEPS = 1000;
 
@@ -26,23 +27,23 @@ protected:
 	int	num;
 	long	steps;
 	long	syncsteps;
-	long	step_best;
 
 	float	alpha;
-	float	chi2_cur, chi2_test, chi2_best;
+	float	chi2_cur, chi2_test ;
+	Results	results;
 
 	FILE	*trace;
 
-	vector<float>	w_cur, w_test, w_best;
+	vector<float>	w_cur, w_test;
 
-	float	c_cur[3],c_test[3],c_best[3];
+	float	c_cur[3],c_test[3];
 
 	vector<C12Map>	&maps;
 	Curve 		&measured;
 
 	virtual void best_callback(void) {}
 	virtual float c12penalty(void);
-	virtual void synchronize(void) {}
+	virtual void synchronize(void) { results.synchronize(); }
 	
 
 public:
@@ -55,7 +56,6 @@ public:
 			num = ma.size();
 			w_cur.resize(num);
 			w_test.resize(num);
-			w_best.resize(num);
 			trace = NULL;
 		}
 
@@ -65,10 +65,12 @@ public:
 	void setMeasured(Curve &c) { measured = c; }
 	void setSyncSteps(long s) { syncsteps = s; }
 
+/*
 	vector<float> & getBestW(void) { return w_best; }
 	float const * getBestC(void) { return c_best; }
 	float getBestChi2(void) { return chi2_best; }
 	long getBestStep(void) { return step_best; }
+*/
 
 	virtual void minimize(int debug);
 

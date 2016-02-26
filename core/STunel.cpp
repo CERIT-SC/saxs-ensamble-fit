@@ -7,7 +7,7 @@
 bool STunel::accept()
 {
 	float	pen = c12penalty(),
-		tunel = 1 - expf(-gamma * (chi2_test+pen - chi2_best));
+		tunel = 1 - expf(-gamma * (chi2_test+pen - results.getMinChi2()));
 
 	float	p = expf(-beta * (tunel - tunel_cur)),
 		r = drand48();
@@ -25,7 +25,10 @@ void STunel::synchronize()
 		float	chi2;
 		int	idx;
 	} snd,rec;
+	
+	MinChi::synchronize();
 
+/*
 	if (step_best > 0)  MPI_Comm_rank(MPI_COMM_WORLD,&snd.idx);
 	else snd.idx = -step_best;
 
@@ -37,9 +40,10 @@ void STunel::synchronize()
 	best_callback();
 
 	if (rec.idx != snd.idx) step_best = -rec.idx;
+*/
 }
 
 void STunel::best_callback() 
 {
-	tunel_cur = 1 - expf(-gamma * (chi2_cur - chi2_best));
+	tunel_cur = 1 - expf(-gamma * (chi2_cur - results.getMinChi2()));
 }

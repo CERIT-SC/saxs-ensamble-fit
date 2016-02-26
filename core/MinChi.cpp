@@ -38,7 +38,6 @@ void MinChi::minimize(int debug)
 	merged.assign(measured.getQ(),measured.getI());
 	w_test.resize(num+2);
 
-	chi2_best = 9.999999e37;
 	init();
 
 	double xu[num+2],xl[num+2];
@@ -95,6 +94,8 @@ void MinChi::minimize(int debug)
 			for (int i=0; i<3; i++) { c_cur[i] = c_test[i]; }
 			chi2_cur = chi2_test;
 
+			float	chi2_best = results.getMinChi2();
+
 			if (!got_best) {
 				got_best = true;
 				chi2_best = 1.01 * chi2_test;
@@ -114,50 +115,35 @@ void MinChi::minimize(int debug)
 				bobyqa_(&n,&npt,x,xl,xu,&rbeg,&rend, &iprint,&maxfun,w);
 				for (int i=0; i<num+2; i++) w_test[i] = x[i];
 				normalize(w_test,num);
-				float chi2_polished = eval(w_test);
 
-				if (chi2_polished < chi2_best) {
-					chi2_best = chi2_polished;
-					w_best = w_test;
-					c_best[1] = w_best[num];
-					c_best[2] = w_best[num+1];
-	
-					step_best = steps;
-					best_callback();
+				Result	p;
+				p.chi2 = eval(w_test);
+				p.c[0] = c_test[0]; // XXX: sideeffect in eval() 
+				p.c[1] = w_test[num];
+				p.c[2] = w_test[num+1];
+				p.w = w_test;
+				p.w.resize(num);
+				p.step = steps;
+				results.insert(p);
 
-				// w_cur = w_best;	// XXX: je to k necemu nebo spis na skodu?
-				// chi2_cur = chi2_best;
-
-					type = 'B';
-				}
-				else type = 'A';
+				best_callback();
+				type = 'B';
 			}
-			//else if (debug) cout << "A";
 			else type = 'A';
 
 		}
-		// else if (debug) cout << "R";
 
 		if (syncsteps && steps % syncsteps == 0) {
 			synchronize();
 
-			if (rank == 0) {
-				std::ofstream stat;
-				stat.open("progress.tmp",std::ofstream::trunc);
-				stat << "step: " << steps << std::endl;
-				stat << "c12: " << c_best[1] << " " << c_best[2] << endl;
-				stat << "weights: ";
-				for (int i = 0; i<num; i++) stat << w_best[i] << " ";
-				stat << endl;
-				stat.close();
-				rename("progress.tmp","progress.dat");
-			}
+			if (rank == 0) results.dump("result",steps,10);
 		}
 
 		// if (debug) cout << "\tchi2=" << chi2_test << "\tchi=" << sqrt(chi2_test) << "\tc=" << c_cur[0] << endl;
 		// XXX: v pripade 'B' zapise taky jen current, tj. odkud se optimalizovalo
 		if (debug) writeTrace(type);
 	}
+	if (rank == 0) results.dump("result",steps,10);
 }
 
 float MinChi::eval(vector<float> const & wc)
@@ -207,6 +193,7 @@ FILE* MinChi::openTrace(const char *name)
 
 void MinChi::writeTrace(int type)
 {
+	/* FIXME: broken while introducing Results 
 	struct {
 		float	c1,c2,chi2;
 		int32_t	s;
@@ -217,4 +204,5 @@ void MinChi::writeTrace(int type)
 	s.chi2 = type == 'B' ? chi2_best : chi2_test;
 	s.s = type;
 	fwrite(&s,sizeof s,1,trace);
+	*/
 }
