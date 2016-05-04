@@ -106,13 +106,13 @@ int main(int argc, char ** argv)
 		else if (parsed) {
 			snprintf(buf, sizeof buf, "%s%02d.c12",prefix,i+1);
 			if (maps[i].restore(buf)) return 1;
+			maps[i].alignScale(measured);
 		}
 		else {
 			snprintf(buf,sizeof buf,"%s%02d/%02d_%%.2f_%%.3f.dat",prefix,i+1,i+1);
 			if (maps[i].load(buf)) return 1;
+			maps[i].alignScale(measured);
 		}
-
-		maps[i].alignScale(measured);
 	}
 
 	switch (alg) {
