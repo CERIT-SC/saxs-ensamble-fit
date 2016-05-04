@@ -115,8 +115,8 @@ void C12Map::interpolate(float c1, float c2, Curve& out)
 	wc2 /= c2step;
 
 	float	w[2][2] = {
-		{ (1.-wc1)*(1.-wc2), (1.-wc1)*wc2 },
-		{ wc1*(1.-wc2), wc1*wc2 }
+		{ (1.F-wc1)*(1.F-wc2), (1.F-wc1)*wc2 },
+		{ wc1*(1.F-wc2), wc1*wc2 }
 	};
 
 	if (is_lazy) {

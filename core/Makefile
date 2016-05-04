@@ -1,6 +1,6 @@
 VPATH=.:../bobyqa
 
-CXX=mpic++
+CXX=mpicxx
 FC=mpif77
 FLIB?=-lifcore
 
