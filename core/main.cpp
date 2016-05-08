@@ -100,8 +100,9 @@ int main(int argc, char ** argv)
 
 		if (lazy) {
 			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
-			if (maps[i].setLazy(buf,fmeasured)) return 1;
 			maps[i].setQMax(measured.getQMax());
+			maps[i].setSize(measured.getSize());
+			if (maps[i].setLazy(buf,fmeasured)) return 1;
 		}
 		else if (parsed) {
 			snprintf(buf, sizeof buf, "%s%02d.c12",prefix,i+1);

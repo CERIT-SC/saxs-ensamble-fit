@@ -15,6 +15,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <IMP/saxs/Profile.h>
+#include <IMP/saxs/utility.h>
+
 #include "C12Map.h"
 
 // #define DEBUG_IPOL
@@ -44,13 +47,21 @@ C12Map::C12Map()
 int C12Map::setLazy(char const *p,char const *d)
 {
 	ifstream	in;
+/*
 	in.open(p);
 	if (in.fail()) {
 		cerr << "open: " << p << endl;
 		return 1;
 	}
 	in.close();
+*/
+	std::vector<IMP::Particles>	pv;
+	std::vector<std::string>	fnames;
 
+	IMP::saxs::read_pdb(p,fnames,pv);
+	imp_profile = new IMP::saxs::Profile(0,qmax,qmax/(size-1));
+	imp_profile->calculate_profile_partial(pv[0]);
+	
 	in.open(d);
 	if (in.fail()) {
 		cerr << "open: " << d << endl;
@@ -303,6 +314,25 @@ void C12Map::lazyCurve(int ic1,int ic2)
 	float	c1 = c1min + ic1*c1step,
 		c2 = c2min + ic2*c2step;
 
+	// sum_partial_profile
+	// cp Profile -> Curve
+	
+	imp_profile->sum_partial_profiles(c1,c2);
+
+	const IMP_Eigen::VectorXf & profI = imp_profile->get_intensities(),
+	      profQ = imp_profile->get_qs();
+
+	std::vector<float> q(profQ.size());
+	std::vector<float> I(profI.size());
+
+	for (int i=0; i<q.size(); i++) {
+		q[i] = profQ[i];
+		I[i] = profI[i];
+	}
+
+	curves[ic1][ic2].assign(q,I);
+
+#if 0
 	char * dirname = NULL;
 	do {
 		free(dirname);
@@ -359,6 +389,7 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 	/* TODO: cleanup */
 	free(dirname);
+#endif
 }
 
 
