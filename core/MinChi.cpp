@@ -136,14 +136,14 @@ void MinChi::minimize(int debug)
 		if (syncsteps && steps % syncsteps == 0) {
 			synchronize();
 
-			if (rank == 0) results.dump("result",steps,10);
+			if (rank == 0) results.dump("results",steps,10);
 		}
 
 		// if (debug) cout << "\tchi2=" << chi2_test << "\tchi=" << sqrt(chi2_test) << "\tc=" << c_cur[0] << endl;
 		// XXX: v pripade 'B' zapise taky jen current, tj. odkud se optimalizovalo
 		if (debug) writeTrace(type);
 	}
-	if (rank == 0) results.dump("result",steps,10);
+	if (rank == 0) results.dump("results",steps,10);
 }
 
 float MinChi::eval(vector<float> const & wc)
