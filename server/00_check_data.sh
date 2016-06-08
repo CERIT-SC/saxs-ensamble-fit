@@ -17,19 +17,15 @@ if ! [ -d "${request_dir}" ]; then
 	exit "${RETURN_SERVER_ERROR}"
 fi
 
-request_config="${request_dir}/config.request"
-if [ -f "${request_config}" ]; then
-	source "${request_config}"
-else
-	log_info "No request config file: \"${request_config}\", using defaults!"
-	echo "# was empty, using defaults" > "${request_config}" 
-fi
+request_params="${request_dir}/params.txt"
+[ -f "${request_params}" ] || exit_error "${RETURN_SERVER_ERROR}" "No request parameters file: \"${request_params}\"!"
 
+source "${request_params}"
 
 structures_file="${request_dir}/${STRUCTURES_FILE}"
 [ -f "${structures_file}" ] || exit_error "${RETURN_SERVER_ERROR}" "Cannot read structures archive: \"${structures_file}\"!"
 
-saxs_data="${request_dir}/${SAXS_DATA}"
+saxs_data="${request_dir}/saxs.dat"
 [ -f "${saxs_data}" ] || exit_error "${RETURN_SERVER_ERROR}" "No SAXS data provided: \"${saxs_data}\"!"
 
 exit "${RETURN_OK}"
