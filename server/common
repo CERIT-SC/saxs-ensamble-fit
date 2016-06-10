@@ -23,7 +23,7 @@ log_err() {
 	echo "${log_message}"
 
 	request_dir="${REQUESTS_DIR}/${request_id}"
-	echo "${log_message}" > "${request_dir}/error_message"
+	echo "${log_message}" > "${request_dir}/error_message.txt"
 
 	# mail admin on server error
 	if [ "${MAIL_ON_ERROR}" = "true" ] && [ "${error_code}" -eq "${RETURN_SERVER_ERROR}" ]; then
