@@ -31,6 +31,10 @@ cd $request_dir
 while true; do
 	job_state="$(qstat -f "${job_id}" | grep "job_state" | sed 's/.*= //')"
 
+	if [ "${job_state}" = "R" ]; then
+		echo "running" > "${request_dir}/status.txt"
+	fi
+
 	if scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/results" result.dat &>/dev/null; then
 		scp "${STORAGE_USER}@${STORAGE_SERVER}:${STORAGE_DIR}/requests/${request_id}/ComputedCurves.tar" . &>/dev/null
 		tar --overwrite -xf ComputedCurves.tar
