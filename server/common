@@ -46,5 +46,9 @@ exit_error() {
 
 	log_err "${error_code}" "${message}"
 
+	cd "${request_dir}"
+	chgrp -R www-data * &> /dev/null
+	chmod -R g+rwX * &> /dev/null
+
 	exit "${error_code}"
 }
