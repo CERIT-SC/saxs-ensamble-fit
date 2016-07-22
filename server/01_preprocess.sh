@@ -71,6 +71,14 @@ for file in "${tmpdir}/"*; do
 done
 rmdir "${tmpdir}"
 
+[ "${index}" == "1" ] && exit_error "${RETURN_USER_ERROR}" "No valid PDB record found."
+
+for file in "${workdir}/structures/"*; do
+	if obabel -ipdb "${file}" -osdf 2>&1 | grep -q "^0 molecules converted$"; then
+		exit_error "${RETURN_USER_ERROR}" "Provided PDB is invalid."
+	fi
+done
+
 shopt -u nullglob
 
 exit "${RETURN_OK}"
