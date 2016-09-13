@@ -70,6 +70,21 @@ int Results::dump(const char *file,int step,int num)
 	return 0; 
 }
 
+void Results::print(int rank, int num)
+{
+	int	cnt = 0;
 
+	cout << "=======" << endl << "rank: " << rank << endl;
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+		cout << "chi: " << sqrtf(p->chi2) <<  endl <<
+			"\tc: " << p->c[0] << endl <<
+			"\tc1: " << p->c[1] << endl <<
+			"\tc2: " << p->c[2] << endl;
+		for (int i = 0; i < p->w.size(); i++)
+			cout << "\tw[" << i << "]:" << p->w[i] << endl;
+		cout << endl;
+		if (cnt++ == num) break;
+	}
+}
 
 

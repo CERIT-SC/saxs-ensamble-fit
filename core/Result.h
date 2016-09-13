@@ -28,6 +28,7 @@ public:
 	void	synchronize(void); 
 
 	int	dump(const char *file,int step,int num);
+	void	print(int rank,int num);
 };
 
 

@@ -21,9 +21,6 @@
 
 #define FLOAT_MAX	9.99E37
 
-// Just test, disable tunelling
-#define PURE_MONTE_CARLO
-
 using namespace std;
 
 static void usage(char const *);
@@ -78,16 +75,8 @@ int main(int argc, char ** argv)
 /* maximal step length (alltogether, not per dimension) */ 
 	alpha /= sqrt(2. + num);
 
-/** MonteCarlo */
-
 /* MC scaling, 5e-3 step up accepted with 10% */
 	beta = - log(.1)/beta; 	
-
-/** StochasticTunel */
-
-/* tunnel scaling */
-//	gamma = 1;
-//
 
 	Curve	measured;
 
@@ -165,28 +154,6 @@ int main(int argc, char ** argv)
 	}
 
 	min->minimize(debug);
-
-/* replaced by "result" dump
-	vector<float> & best = min->getBestW();
-	float const *c = min->getBestC();
-	float chi2 = min->getBestChi2();
-	long step = min->getBestStep();
-
-	if (step > 0) {
-		cout << "[" << setw(2) << rank << "] best: #" << setw(5) << step << ": " << fixed;
-		cout.precision(3);
-
-		for (int i=0; i<num; i++) 
-			if (best[i] >= 0.001)  cout << best[i] << " ";
-			else cout << "      ";
-
-		cout << c[1] << " " << c[2];
-		cout << "\tchi2=" << chi2 << "\tchi=" << sqrt(chi2) << "\tc=" << c[0] << endl;
-	}
-	else {
-		cout << "[" << rank << "] best found by " << -step << endl;
-	}
-*/
 
 	MPI_Finalize();
 
