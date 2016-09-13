@@ -194,5 +194,18 @@ int main(int argc, char ** argv)
 
 static void usage(char const *me)
 {
-	cerr << "usage: " << me << " -n num -m measured " << endl;
+	cerr << "usage: mpirun <options> " << me <<  " <options>" << endl <<
+		"	-n num 		number of models (mandatory)" << endl << 
+		"	-m measured	experimental data (mandatory)" << endl <<
+		"	-l alpha	max step length (default 0.1)" << endl <<
+		" 	-b beta		scaled Metropolis factor, accept this increase with 10% (default 0.005)" << endl <<
+		"	-g gamma	exponential factor in stochastic tunelling (default 500)" << endl <<
+		"	-s steps	major optimization steps" << endl <<
+		"	-d 		debug" << endl <<
+		"	-a 		algorithm, one of bruteforce/randomwalk/montecarlo/stunel (default stunel)" << endl <<
+		"	-q		use pre-parsed maps of c1-c2 (output of parse-map)" << endl <<
+		"	-y syncsteps	steps between inter-processes synchronization (default 0 -- don't sync)" << endl <<
+		"	-t trace	prefix for trace files" << endl <<
+		"	-L		be lazy, compute single SAXS curves on the fly, not all in advance" << endl <<
+		"	-p prefix	model file prefix" << endl;
 }
