@@ -29,6 +29,8 @@ class C12Map
 
 	static char const *FOXS;
 
+	Curve const * measured;
+
 public:
 	C12Map();
 
@@ -48,6 +50,8 @@ public:
 
 	float trueC1(float c1) const { return c1min + c1 * (c1max-c1min); }
 	float trueC2(float c2) const { return c2min + c2 * (c2max-c2min); }
+
+	void setMeasured(const Curve & m) { measured = &m; }
 };
 
 #endif

@@ -331,6 +331,7 @@ void C12Map::lazyCurve(int ic1,int ic2)
 	}
 
 	curves[ic1][ic2].assign(q,I);
+	curves[ic1][ic2].alignScale(*measured);
 
 #if 0
 	char * dirname = NULL;

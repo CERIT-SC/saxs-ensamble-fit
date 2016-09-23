@@ -84,8 +84,12 @@ int main(int argc, char ** argv)
 	maps.resize(num);
 
 	if (measured.load(fmeasured)) return 1;
+
 	for (int i=0; i<num; i++) {
 		char	buf[PATH_MAX];
+
+/* used to align generated curves */		
+		maps[i].setMeasured(measured);
 
 		if (lazy) {
 			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
