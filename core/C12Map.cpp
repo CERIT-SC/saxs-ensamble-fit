@@ -305,10 +305,6 @@ static void filetodir(const char *src,const char *dir,const char *dst)
 	delete [] buf;
 }
 
-/* XXX: call external foxs binary. 
- * Should be replaced with just the linked-in computation
- */
-
 void C12Map::lazyCurve(int ic1,int ic2)
 {
 	float	c1 = c1min + ic1*c1step,
@@ -332,65 +328,6 @@ void C12Map::lazyCurve(int ic1,int ic2)
 
 	curves[ic1][ic2].assign(q,I);
 	curves[ic1][ic2].alignScale(*measured);
-
-#if 0
-	char * dirname = NULL;
-	do {
-		free(dirname);
-		dirname = tempnam(NULL,"saxs");
-	}
-	while (mkdir(dirname,0700));	// XXX: may loop forever
-
-	pid_t	child = fork();
-	int	stat;
-
-	assert(child >= 0);
-
-	char	qmax_s[20],e_s[20],w_s[20],buf[500];
-	sprintf(qmax_s,"%f",qmax);
-	sprintf(e_s,"%f",c1);
-	sprintf(w_s,"%f",c2);
-
-	if (child) {
-		waitpid(child,&stat,0);
-		assert(WIFEXITED(stat) && WEXITSTATUS(stat) == 0);	// XXX
-	}
-	else {
-		filetodir(lazy_pdb,dirname,"model.pdb");
-		filetodir(lazy_profile,dirname,"profile.dat");
-
-		chdir(dirname);
-
-		int	logfile = open("foxs.log",O_WRONLY|O_CREAT|O_TRUNC,0644);
-		int	len = sprintf(buf,"# %s -q %s -e %s -w %s model.pdb profile.dat\n\n",
-				FOXS,qmax_s,e_s,w_s);
-
-		write(logfile,buf,len);
-
-		dup2(logfile,1);
-		dup2(logfile,2);
-		close(logfile);
-
-		execlp(FOXS,FOXS,
-			"-q",qmax_s,
-			"-e",e_s,
-			"-w",w_s,
-			"model.pdb",
-			"profile.dat",
-			NULL
-		      );
-		perror("exec()");
-		exit(1);
-	}
-
-	char	outname[PATH_MAX];
-
-	sprintf(outname,"%s/model_profile.dat",dirname);
-	curves[ic1][ic2].load(outname,false);
-
-	/* TODO: cleanup */
-	free(dirname);
-#endif
 }
 
 
