@@ -113,9 +113,11 @@ void MinChi::minimize(int debug)
 
 		if (debug) writeTrace(type);
 	}
-	if (rank == 0) results.dump("result",steps,10);
-
-	results.print(rank,10);
+	synchronize();
+	if (rank == 0) {
+		results.dump("result",steps);
+		results.print(rank);
+	}
 }
 
 float MinChi::eval(vector<float> const & wc)

@@ -19,7 +19,7 @@ static bool similar(Result const &r1, Result const &r2)
 {
 	float	d = 0.;
 	int	size = r1.w.size();
-	assert(size == r2.w.size());
+	if (size != r2.w.size()) return 0;
 
 	for (int i = 0; i<size; i++) {
 		float	dd = r1.w[i] - r2.w[i];
@@ -36,10 +36,83 @@ void Results::insert(Result &r)
 	res.push_front(r);
 	res.sort();
 	res.unique(similar);
+	res.resize(Results::MAX);
 }
 
 void Results::synchronize(void)
 {
+	int	nproc,i;
+
+	MPI_Comm_size(MPI_COMM_WORLD,&nproc);
+
+	int	*mysteps = new int[Results::MAX],
+		*allsteps = new int[nproc * Results::MAX];
+
+	i = 0;
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+		assert(i < Results::MAX);
+		mysteps[i++] = p->step;
+	}
+	for (; i<Results::MAX; i++) mysteps[i] = 0;
+
+	MPI_Allgather(mysteps,Results::MAX,MPI_INT,
+			allsteps,Results::MAX,MPI_INT,
+			MPI_COMM_WORLD);
+
+	float	*mychi = new float[Results::MAX],
+		*allchi = new float[nproc * Results::MAX];
+
+	i = 0;
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++)  {
+		if (mysteps[i]) mychi[i] = p->chi2;
+		i++;
+	}
+
+	MPI_Allgather(mychi,Results::MAX,MPI_FLOAT,
+			allchi,Results::MAX,MPI_FLOAT,
+			MPI_COMM_WORLD);
+
+	float	*myc = new float[Results::MAX * 3],
+		*allc = new float[nproc * Results::MAX * 3];
+
+	i = 0;
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+		if (mysteps[i]) {
+			myc[3*i] = p->c[0];
+			myc[3*i+1] = p->c[1];
+			myc[3*i+2] = p->c[2];
+		}
+		i++;
+	}
+
+	MPI_Allgather(myc,Results::MAX * 3,MPI_FLOAT,
+			allc,Results::MAX * 3,MPI_FLOAT,
+			MPI_COMM_WORLD);
+
+	int	num = res.begin()->w.size();
+	float	*myw = new float[Results::MAX * num],
+		*allw = new float[nproc * Results::MAX * num];
+
+	i = 0;
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+		if (mysteps[i]) 
+			for (int j=0; j<num; j++) myw[i*num + j] = p->w[j];
+		i++;
+	}
+
+	MPI_Allgather(myw,Results::MAX * num,MPI_FLOAT,
+			allw,Results::MAX * num,MPI_FLOAT,
+			MPI_COMM_WORLD);
+
+	for (i=0; i<nproc * Results::MAX; i++) if (allsteps[i]) {
+		Result r;
+		r.step = allsteps[i];
+		r.chi2 = allchi[i];
+		r.c[0] = allc[3*i]; r.c[1] = allc[3*i+1]; r.c[2] = allc[3*i+2];
+		r.w.resize(num);
+		for (int j=0; j<num; j++) r.w[j] = allw[i*num+j];
+		insert(r);
+	}
 }
 
 int Results::dump(const char *file,int step,int num)
