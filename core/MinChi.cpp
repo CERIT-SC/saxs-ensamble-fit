@@ -106,7 +106,9 @@ void MinChi::minimize(int debug)
 		}
 
 		if (syncsteps && steps % syncsteps == 0) {
-			synchronize();
+			float	oldchi2 = results.getMinChi2();
+			synchronize(); 
+			if (oldchi2 > results.getMinChi2()) best_callback();
 
 			if (rank == 0) results.dump("result",steps,10);
 		}

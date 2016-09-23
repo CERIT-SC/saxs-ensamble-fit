@@ -113,6 +113,15 @@ void Results::synchronize(void)
 		for (int j=0; j<num; j++) r.w[j] = allw[i*num+j];
 		insert(r);
 	}
+
+	delete [] mysteps;
+	delete [] allsteps;
+	delete [] mychi;
+	delete [] allchi;
+	delete [] myc;
+	delete [] allc;
+	delete [] myw;
+	delete [] allw;
 }
 
 int Results::dump(const char *file,int step,int num)
@@ -129,7 +138,7 @@ int Results::dump(const char *file,int step,int num)
 	}
 
 	f << step << endl;
-	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) if (p->w.size()) {
 		f << p->c[0] << ',' << p->c[1] << ',' << p->c[2] << ',' << sqrtf(p->chi2) << ',';
 		for (int i = 0; i < p->w.size(); i++)
 			f << p->w[i] << ',';
@@ -148,7 +157,7 @@ void Results::print(int rank, int num)
 	int	cnt = 0;
 
 	cout << "=======" << endl << "rank: " << rank << endl;
-	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) {
+	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) if (p->w.size()) {
 		cout << "chi: " << sqrtf(p->chi2) <<  endl <<
 			"\tc: " << p->c[0] << endl <<
 			"\tc1: " << p->c[1] << endl <<
