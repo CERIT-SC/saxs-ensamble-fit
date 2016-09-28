@@ -5,6 +5,7 @@
 
 #include <mpi.h>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 
 #include "Result.h"
@@ -139,9 +140,10 @@ int Results::dump(const char *file,int step,int num)
 
 	f << step << endl;
 	for (list<Result>::iterator p = res.begin(); p != res.end(); p++) if (p->w.size()) {
-		f << p->c[0] << ',' << p->c[1] << ',' << p->c[2] << ',' << sqrtf(p->chi2) << ',';
+		f << setprecision(2) << scientific << p->c[0] << ',' << setprecision(3);
+		f << fixed << p->c[1] << ',' << p->c[2] << ',' << sqrtf(p->chi2);
 		for (int i = 0; i < p->w.size(); i++)
-			f << p->w[i] << ',';
+			f << "," << p->w[i];
 		f << endl;
 		if (cnt++ == num) break;
 	}
@@ -168,5 +170,3 @@ void Results::print(int rank, int num)
 		if (cnt++ == num) break;
 	}
 }
-
-

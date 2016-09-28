@@ -91,8 +91,8 @@ void MinChi::minimize(int debug)
 				Result	p;
 				p.chi2 = eval(w_test);
 				p.c[0] = c_test[0]; // XXX: sideeffect in eval() 
-				p.c[1] = w_test[num];
-				p.c[2] = w_test[num+1];
+				p.c[1] = maps[0].trueC1(w_test[num]);
+				p.c[2] = maps[0].trueC2(w_test[num+1]);
 				p.w = w_test;
 				p.w.resize(num);
 				p.step = steps;
@@ -110,7 +110,7 @@ void MinChi::minimize(int debug)
 			synchronize(); 
 			if (oldchi2 > results.getMinChi2()) best_callback();
 
-			if (rank == 0) results.dump("result",steps,10);
+			if (rank == 0) results.dump("results",steps,10);
 		}
 
 		if (debug) writeTrace(type);

@@ -10,7 +10,7 @@ if [ $# -ne 1 ]; then
 fi
 
 request_id=$1
-request_dir="${REQUESTS_DIR}/${request_id}" 
+request_dir="${REQUESTS_DIR}/${request_id}"
 
 [ "${CLEAN_AFTER_SUCCESS}" = "false" ] && exit "${RETURN_OK}"
 
@@ -23,6 +23,6 @@ if ! ssh "${STORAGE_USER}@${STORAGE_SERVER}" rm -rf "saxsfit/requests/${request_
 fi
 
 # clean local things
-rm -rf "${request_dir}/workdir" "${request_dir}/foxs_jobs_running" || exit_error "${RETURN_SERVER_ERROR}" "Cannot cleanup local files in the request directory"
+rm -rf "${request_dir}/workdir" || exit_error "${RETURN_SERVER_ERROR}" "Cannot cleanup local files in the request directory"
 
 exit "${RETURN_OK}"
