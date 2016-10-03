@@ -3,6 +3,7 @@ VPATH=.:../bobyqa
 CXX=mpicxx
 FC=mpif77
 FLIB?=-lgfortran
+OPT=-O2
 
 # Mac
 #IMP=../imp-2.6.1/build
@@ -19,7 +20,7 @@ BOBJ:=bobyqa.o bobyqb.o prelim.o trsbox.o update.o altmov.o rescue.o
 
 OBJ:=${SRC:.cpp=.o}  ${BOBJ}
 
-CXXFLAGS=-g3 ${OPT} -I${IMP}/include ${BOOSTINC} -std=c++11
+CXXFLAGS=-g3 ${OPT} -isystem ${IMP}/include ${BOOSTINC} -std=c++11
 FFLAGS=-g3 ${OPT}
 
 IMPLIB=-L${IMPLIBDIR} -Wl,-rpath ${IMPLIBDIR} -limp_saxs -limp_kernel 

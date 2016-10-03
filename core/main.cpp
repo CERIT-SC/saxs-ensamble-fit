@@ -28,13 +28,14 @@ static void usage(char const *);
 int main(int argc, char ** argv)
 {
 
-	char	*prefix = "";
+	const char *prefix = "";
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
 	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
 
-	char	*fmeasured = 0, *tprefix = ".";
+	char	*fmeasured = 0;
+	const char *tprefix = ".";
 
 	MinChi	*min = 0;
 
@@ -56,9 +57,9 @@ int main(int argc, char ** argv)
 		case 's': maxsteps = atol(optarg); break;
 		case 'd': debug = true; break;
 		case 'a': if (strcasecmp(optarg,"bruteforce") == 0) alg = BRUTEFORCE;
-				  else if (strcasecmp(optarg,"randomwalk")==0) alg = RANDOMWALK;
+				  else if (strcasecmp(optarg,"random_walk")==0) alg = RANDOMWALK;
 				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
-				  else if (strcasecmp(optarg,"stunel")==0) alg = STUNEL;
+				  else if (strcasecmp(optarg,"stunnel")==0) alg = STUNEL;
 				  else { usage(argv[0]); return 1; }
 			  break;
 		case 'q': parsed = true; break;
@@ -170,10 +171,10 @@ static void usage(char const *me)
 		"	-m measured	experimental data (mandatory)" << endl <<
 		"	-l alpha	max step length (default 0.1)" << endl <<
 		" 	-b beta		scaled Metropolis factor, accept this increase with 10% (default 0.005)" << endl <<
-		"	-g gamma	exponential factor in stochastic tunelling (default 500)" << endl <<
+		"	-g gamma	exponential factor in stochastic tunnelling (default 500)" << endl <<
 		"	-s steps	major optimization steps" << endl <<
 		"	-d 		debug" << endl <<
-		"	-a 		algorithm, one of bruteforce/randomwalk/montecarlo/stunel (default stunel)" << endl <<
+		"	-a 		algorithm, one of bruteforce/random_walk/montecarlo/stunnel (default stunnel)" << endl <<
 		"	-q		use pre-parsed maps of c1-c2 (output of parse-map)" << endl <<
 		"	-y syncsteps	steps between inter-processes synchronization (default 0 -- don't sync)" << endl <<
 		"	-t trace	prefix for trace files" << endl <<

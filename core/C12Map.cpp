@@ -321,7 +321,7 @@ void C12Map::lazyCurve(int ic1,int ic2)
 	std::vector<float> q(profQ.size());
 	std::vector<float> I(profI.size());
 
-	for (int i=0; i<q.size(); i++) {
+	for (unsigned int i=0; i<q.size(); i++) {
 		q[i] = profQ[i];
 		I[i] = profI[i];
 	}
