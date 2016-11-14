@@ -18,8 +18,11 @@ workdir="${request_dir}/workdir"
 mkdir "${workdir}"
 mkdir "${workdir}/structures"
 
-# copy SAXS data
+# check & copy SAXS data
 saxs_data="${request_dir}/saxs.dat"
+err_msg=$(./saxs_test.py ${saxs_data} 2>&1)
+[ $? -eq 0 ] || exit_error "${RETURN_USER_ERROR}" "SAXS data: ${err_msg}"
+
 cp "${saxs_data}" "${workdir}/saxs.dat"
 
 # extract NMR structures
