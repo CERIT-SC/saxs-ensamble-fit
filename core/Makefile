@@ -11,6 +11,9 @@ OPT=-O2
 #BOOST=/opt/local
 #BOOSTINC=-I${BOOST}/include
 
+BOOSTOPT=-lboost_program_options
+LAPACK=-llapack
+
 IMP=/software/imp/2.6.1
 IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
 
@@ -44,6 +47,9 @@ test-ipol: test-ipol.o Curve.o C12Map.o
 
 1dcut minc12 extract-trace: %: %.o
 	${CXX} ${LDFLAGS} -o $@ $@.o
+
+bobyqa-logreduce: %: %.o
+	${CXX} ${LDFLAGS} -o $@ $@.o ${BOOSTOPT} ${LAPACK}
 
 clean:
 	rm -f ${OBJ} ensamble-fit
