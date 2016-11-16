@@ -1,4 +1,5 @@
 #include <string.h>
+#include <math.h>
 
 #include <iostream>
 #include <fstream>
@@ -38,8 +39,8 @@ template <class F> class Point;
 
 template <class F> class PointBase {
 public:
-	F		kappa;
-	vector<F>	A,B;
+	vector<F>	x;
+
 
 	template <class G> PointBase<F> & operator =(Point<G> const &);
 //	template <class G> PointBase<double> & operator =(PointBase<G> const &);
@@ -48,28 +49,22 @@ public:
 	PointBase<F>(void) {}; 
 
 	PointBase<F>(int s) {
-		A.resize(s); 
-		B.resize(s);
-		for (int i=0; i<s; i++) A[i] = B[i] = 0.;
+		x.resize(s); 
+		for (int i=0; i<s; i++) x[i] = 0.;
 	}
 
 	template <class G> PointBase<F>(PointBase<G> const & g) {
-		kappa = g.kappa;
-		for (int i=0; i<g.A.size(); i++) A.push_back(g.A[i]);
-		for (int i=0; i<g.B.size(); i++) B.push_back(g.B[i]);
+		for (int i=0; i<g.x.size(); i++) x.push_back(g.x[i]);
 	}
 
 	PointBase<F> & operator *= (double d) {
-		kappa *= d;
-		for (int i=0; i<A.size(); i++) A[i] *= d;
-		for (int i=0; i<B.size(); i++) B[i] *= d;
+		for (int i=0; i<x.size(); i++) x[i] *= d;
 	}
 
 	F dotp(vector<F> const &v) const {
-		F	ret = kappa * v[0];
+		F	ret = 0;
 
-		for (int i=0; i<A.size(); i++) ret += v[i+1]*A[i];
-		for (int i=0; i<B.size(); i++) ret += v[A.size()+i+1]*B[i];
+		for (int i=0; i<x.size(); i++) ret += v[i]*x[i];
 
 		return	ret;
 	}
@@ -77,24 +72,20 @@ public:
 
 template <class F> template <class G> PointBase<F> & PointBase<F>::operator=(Point<G> const &f)
 {
-	kappa = f.kappa;
-	A = f.A;
-	B = f.B;
+	x = f.x;
 
 	return *this;
 }
 
 template <class F> template <class G> PointBase<F> & PointBase<F>::operator +=(PointBase<G>  const & r)
 {
-	kappa += r.kappa;
-	for (int i=0; i<A.size(); i++) A[i] += r.A[i];
-	for (int i=0; i<B.size(); i++) B[i] += r.B[i];
+	for (int i=0; i<x.size(); i++) x[i] += r.x[i];
 	return *this;
 }
 
 template <class F> class Point: public PointBase<F> {
 public:
-	F	R,RW,Sp,RMSD,D_avg,D_max;
+	F	chi2;
 	vector<string>	types;
 
 	bool	load(istream &);
@@ -104,34 +95,25 @@ public:
 template <class F> bool Point<F>::load(istream & in)
 {
 	char	line[BUFSIZ];
-	this->A.clear();
-	this->B.clear();
-	this->types.clear();
-
-#define CLUE	"NEWUOA K:"
-
-	while (! in.getline(line,sizeof line).eof() && 
-		strncmp(line,CLUE,sizeof(CLUE)-1));
-
-	if (in.eof()) return false;
-
-// NEWUOA K: 0.0746 |  R: -0.0542  R2: 0.0056  RW: -1.3656  Sp: -0.1671  RMSD: 0.6560  D_avg: 0.5653  D_max: 1.7071
-	stringstream	parse(line);
+	this->x.clear();
 	string	s;
 
-	parse >> s >> s >> this->kappa >> s >> s >> R >> s >> s >> s >> RW >> s >> Sp >> s >> RMSD >> s >> D_avg >> s >> D_max;
+#define CLUE	"    Function number"
 
-#define Atomtype "Atom type"
-	in.getline(line,sizeof line);
-	if (strncmp(line,Atomtype,sizeof(Atomtype)-1)) return false;
+	while (! in.getline(line,sizeof line).eof() && strlen(line) > 0 && strncmp(line,CLUE,sizeof(CLUE)-1)) ;
+
+	stringstream	parse(line);
+
+//    Function number   284    F =  1.0973091125D+00    
+	parse >> s >> s >> s >> s >> s >> chi2;
 
 	while (! in.getline(line,sizeof line).eof() && strlen(line) > 0) {
-		F	a,b;
-		stringstream	parse(line);
-		parse >> s >> a >> b;
-		this->A.push_back(a);
-		this->B.push_back(b);
-		this->types.push_back(s);
+
+		F	xx[5] = { FP_NAN, FP_NAN, FP_NAN, FP_NAN, FP_NAN };
+
+		for (int j=0; line[j]; j++) if (line[j] == 'D') line[j] = 'e';
+		int n = sscanf(line,"%f %f %f %f %f",xx,xx+1,xx+2,xx+3,xx+4);
+		for (int j=0; j<n; j++) this->x.push_back(xx[j]);
 	}
 
 	return !in.eof();
@@ -139,16 +121,14 @@ template <class F> bool Point<F>::load(istream & in)
 
 class Select {
 public:
-	float	R2, RMSD;
+	float	chi2;
 
 	Select() {
-		R2 = 1.;
-		RMSD = 9.999E38;
+		chi2	= 1e38;
 	}
 
 	bool match(Point<float> const & p) const {
-		if (p.R * p.R  > R2) return false;
-		if (p.RMSD  > RMSD) return false;
+		if (p.chi2  > chi2) return false;
 
 		return true;
 	}
@@ -163,10 +143,9 @@ int main(int argc, char ** argv)
 	po::options_description desc("Options");
 	desc.add_options()
 		("help", "help message")
-		("r2", po::value<float>()->default_value(1.0), "select points for dimension reduction - smaller R2 only")
-		("rmsd", po::value<float>()->default_value(100000.0), "select points for dimension reduction - smaller RMSD only")
+		("chi2", po::value<float>()->default_value(100000.0), "select points for dimension reduction - smaller chi2 only")
 		("dim", po::value<int>()->default_value(2), "reduce to this number of dimensions")
-		("all", "map all points, not only those selected by R2/RMSD")
+		("all", "map all points, not only those selected by chi2")
 ;
 
 	po::variables_map opt;
@@ -180,8 +159,7 @@ int main(int argc, char ** argv)
 	if (opt.count("help")) { cerr << desc; return 1; }
 
 	Select	sel;
-	sel.R2 = opt["r2"].as<float>();
-	sel.RMSD = opt["rmsd"].as<float>();
+	sel.chi2 = opt["chi2"].as<float>();
 
 	int	dimreduce = opt["dim"].as<int>();
 	bool allpoints = opt.count("all");
@@ -196,7 +174,7 @@ int main(int argc, char ** argv)
 	cerr << pt.size() << " points read      " << endl;
 
 
-	PointBase<double> sum(pt[0].A.size());
+	PointBase<double> sum(pt[0].x.size());
 	vector<PointBase<float> > matched;
 	long nmatch = 0;
 
@@ -216,17 +194,15 @@ int main(int argc, char ** argv)
 
 	for (int i=0; i<matched.size(); i++) matched[i] += minusavg;
 
-	int	ntypes = pt[0].A.size(), npar = 1 + 2*ntypes,npar2 = npar*npar;
-	double *cov = new double[npar2]; // lower triangular, kappa, A1, A2, ..., B1, B2, ...
+	int	npar = pt[0].x.size(), npar2 = npar*npar;
+	double *cov = new double[npar2]; // lower triangular
 	vector<double>	par(npar);
 	
 	for (int k=0; k<npar2; k++) cov[k] = 0.;
 
 	for (int n=0; n < nmatch; n++) {
-		par[0] = matched[n].kappa;
-		for (int i=0; i<ntypes; i++) {
-			par[i+1] = matched[n].A[i];
-			par[ntypes+i+1] = matched[n].B[i];
+		for (int i=0; i<npar; i++) {
+			par[i] = matched[n].x[i];
 		}
 
 		for (int i=0; i<npar; i++) {
@@ -295,7 +271,7 @@ int main(int argc, char ** argv)
 			for (int j=0; j<dimreduce; j++) {
 				cout << pt[i].dotp(evec[j]) << ", ";
 			}
-			cout << pt[i].RMSD << ", " << pt[i].R*pt[i].R;
+			cout << pt[i].chi2;
 			cout << endl;
 		}
 
