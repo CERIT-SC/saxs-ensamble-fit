@@ -18,6 +18,7 @@
 #include "RandomWalk.h"
 #include "MonteCarlo.h"
 #include "STunel.h"
+#include "GdMin.h"
 
 #define FLOAT_MAX	9.99E37
 
@@ -35,7 +36,7 @@ int main(int argc, char ** argv)
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
-	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
+	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL, GDMIN }	alg = STUNEL;
 
 	char	*fmeasured = 0, *tprefix = ".";
 
@@ -62,6 +63,7 @@ int main(int argc, char ** argv)
 				  else if (strcasecmp(optarg,"randomwalk")==0) alg = RANDOMWALK;
 				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
 				  else if (strcasecmp(optarg,"stunel")==0) alg = STUNEL;
+                  else if (strcasecmp(optarg, "gdmin") == 0) alg = GDMIN;
 				  else { usage(argv[0]); return 1; }
 			  break;
 		case 'q': parsed = true; break;
@@ -143,6 +145,12 @@ int main(int argc, char ** argv)
 			min = t;
 			break;
 		}
+        case GDMIN: {
+            GdMin *g = new GdMin(measured, maps);
+            g->setMaxSteps(maxsteps);
+            min = g;
+            break; 
+        }
 		default:
 			cerr << "algorithm " << alg << " not implemented" << endl;
 			return 1;
