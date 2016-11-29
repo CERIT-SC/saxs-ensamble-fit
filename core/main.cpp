@@ -22,9 +22,6 @@
 
 #define FLOAT_MAX	9.99E37
 
-// Just test, disable tunelling
-#define PURE_MONTE_CARLO
-
 using namespace std;
 
 static void usage(char const *);
@@ -32,13 +29,14 @@ static void usage(char const *);
 int main(int argc, char ** argv)
 {
 
-	char	*prefix = "";
+	const char *prefix = "";
 	int	num = -1, syncsteps = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
 	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL, GDMIN }	alg = STUNEL;
 
-	char	*fmeasured = 0, *tprefix = ".";
+	char	*fmeasured = 0;
+	const char *tprefix = ".";
 
 	MinChi	*min = 0;
 
@@ -60,9 +58,9 @@ int main(int argc, char ** argv)
 		case 's': maxsteps = atol(optarg); break;
 		case 'd': debug = true; break;
 		case 'a': if (strcasecmp(optarg,"bruteforce") == 0) alg = BRUTEFORCE;
-				  else if (strcasecmp(optarg,"randomwalk")==0) alg = RANDOMWALK;
+				  else if (strcasecmp(optarg,"random_walk")==0) alg = RANDOMWALK;
 				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
-				  else if (strcasecmp(optarg,"stunel")==0) alg = STUNEL;
+				  else if (strcasecmp(optarg,"stunnel")==0) alg = STUNEL;
                   else if (strcasecmp(optarg, "gdmin") == 0) alg = GDMIN;
 				  else { usage(argv[0]); return 1; }
 			  break;
@@ -80,16 +78,8 @@ int main(int argc, char ** argv)
 /* maximal step length (alltogether, not per dimension) */ 
 	alpha /= sqrt(2. + num);
 
-/** MonteCarlo */
-
 /* MC scaling, 5e-3 step up accepted with 10% */
 	beta = - log(.1)/beta; 	
-
-/** StochasticTunel */
-
-/* tunnel scaling */
-//	gamma = 1;
-//
 
 	Curve	measured;
 
@@ -97,24 +87,29 @@ int main(int argc, char ** argv)
 	maps.resize(num);
 
 	if (measured.load(fmeasured)) return 1;
+
 	for (int i=0; i<num; i++) {
 		char	buf[PATH_MAX];
 
+/* used to align generated curves */		
+		maps[i].setMeasured(measured);
+
 		if (lazy) {
 			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
-			if (maps[i].setLazy(buf,fmeasured)) return 1;
 			maps[i].setQMax(measured.getQMax());
+			maps[i].setSize(measured.getSize());
+			if (maps[i].setLazy(buf,fmeasured)) return 1;
 		}
 		else if (parsed) {
 			snprintf(buf, sizeof buf, "%s%02d.c12",prefix,i+1);
 			if (maps[i].restore(buf)) return 1;
+			maps[i].alignScale(measured);
 		}
 		else {
 			snprintf(buf,sizeof buf,"%s%02d/%02d_%%.2f_%%.3f.dat",prefix,i+1,i+1);
 			if (maps[i].load(buf)) return 1;
+			maps[i].alignScale(measured);
 		}
-
-		maps[i].alignScale(measured);
 	}
 
 	switch (alg) {
@@ -173,33 +168,24 @@ int main(int argc, char ** argv)
 
 	min->minimize(debug);
 
-/* replaced by "result" dump
-	vector<float> & best = min->getBestW();
-	float const *c = min->getBestC();
-	float chi2 = min->getBestChi2();
-	long step = min->getBestStep();
-
-	if (step > 0) {
-		cout << "[" << setw(2) << rank << "] best: #" << setw(5) << step << ": " << fixed;
-		cout.precision(3);
-
-		for (int i=0; i<num; i++) 
-			if (best[i] >= 0.001)  cout << best[i] << " ";
-			else cout << "      ";
-
-		cout << c[1] << " " << c[2];
-		cout << "\tchi2=" << chi2 << "\tchi=" << sqrt(chi2) << "\tc=" << c[0] << endl;
-	}
-	else {
-		cout << "[" << rank << "] best found by " << -step << endl;
-	}
-*/
-
 	MPI_Finalize();
 
 }
 
 static void usage(char const *me)
 {
-	cerr << "usage: " << me << " -n num -m measured " << endl;
+	cerr << "usage: mpirun <options> " << me <<  " <options>" << endl <<
+		"	-n num 		number of models (mandatory)" << endl << 
+		"	-m measured	experimental data (mandatory)" << endl <<
+		"	-l alpha	max step length (default 0.1)" << endl <<
+		" 	-b beta		scaled Metropolis factor, accept this increase with 10% (default 0.005)" << endl <<
+		"	-g gamma	exponential factor in stochastic tunnelling (default 500)" << endl <<
+		"	-s steps	major optimization steps" << endl <<
+		"	-d 		debug" << endl <<
+		"	-a 		algorithm, one of bruteforce/random_walk/montecarlo/stunnel (default stunnel)" << endl <<
+		"	-q		use pre-parsed maps of c1-c2 (output of parse-map)" << endl <<
+		"	-y syncsteps	steps between inter-processes synchronization (default 0 -- don't sync)" << endl <<
+		"	-t trace	prefix for trace files" << endl <<
+		"	-L		be lazy, compute single SAXS curves on the fly, not all in advance" << endl <<
+		"	-p prefix	model file prefix" << endl;
 }

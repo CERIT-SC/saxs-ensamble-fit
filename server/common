@@ -23,7 +23,7 @@ log_err() {
 	echo "${log_message}"
 
 	request_dir="${REQUESTS_DIR}/${request_id}"
-	echo "${log_message}" > "${request_dir}/error_message"
+	echo "${log_message}" > "${request_dir}/error_message.txt"
 
 	# mail admin on server error
 	if [ "${MAIL_ON_ERROR}" = "true" ] && [ "${error_code}" -eq "${RETURN_SERVER_ERROR}" ]; then
@@ -39,43 +39,16 @@ exit_error() {
 	request_dir="${REQUESTS_DIR}/${request_id}"
 
 	if [ "${error_code}" -eq "${RETURN_USER_ERROR}" ]; then
-		echo "user_error" > "${request_dir}/state"
+		echo "user_error" > "${request_dir}/status.txt"
 	else
-		echo "server_error" > "${request_dir}/state"
+		echo "server_error" > "${request_dir}/status.txt"
 	fi
 
 	log_err "${error_code}" "${message}"
 
+	cd "${request_dir}"
+	chgrp -R www-data * &> /dev/null
+	chmod -R g+rwX * &> /dev/null
+
 	exit "${error_code}"
-}
-
-update_results() {
-	file="$1"
-	field="$2"
-	value="$3"
-	found=0
-
-	rm ${file}.tmp
-	while read line; do
-		if echo "$line" | grep -q "^${field}:" 2>/dev/null; then
-			echo "$field: $value" >>${file}.tmp
-			found=1
-		else
-			echo $line >>${file}.tmp
-		fi
-
-	done <"$file"
-
-	if [ $found -eq 0 ]; then 
-		echo "$field: $value" >>${file}.tmp
-	fi
-
-	mv -f ${file}.tmp $file
-}
-
-extract_param() {
-	file=$1
-	param=$2
-
-	grep "^$param:" $file | sed "s/^$param: *//"
 }

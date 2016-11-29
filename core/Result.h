@@ -14,20 +14,22 @@ public:
 	vector<float>	w;
 	vector<float>	c;
 
-	Result() { c.resize(3); }
+	Result() { c.resize(3); chi2 = 9.999999e37; }
 
 	friend bool operator<(Result const &r1,Result const &r2) { return r1.chi2 < r2.chi2; }
 };
 
 class Results
 {
+	static const int	MAX = 10;
 	list<Result>	res;
 public:
 	void	insert(Result &r);
 	float	getMinChi2(void);
 	void	synchronize(void); 
 
-	int	dump(const char *file,int step,int num);
+	int	dump(const char *file,int step,int num = Results::MAX);
+	void	print(int rank,int num = Results::MAX);
 };
 
 

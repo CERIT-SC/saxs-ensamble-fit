@@ -59,34 +59,6 @@ void MinChi::minimize(int debug)
 
 		chi2_test = eval(w_test); // - c12penalty();
 
-#if 0
-/* denormalize c1,c2 */
-		float c1 = maps[0].trueC1(c_test[1]);
-		float c2 = maps[0].trueC2(c_test[2]);
-
-
-/* normalize weights (not strictly necessary but ...) */
-		float w = 0;
-		for (int i=0; i<num; i++) w += w_test[i];
-		if (w != 0.) {
-			w = 1./w;
-			for (int i=0; i<num; i++) w_test[i] *= w;
-		}
-		else for (int i=0; i<num; i++) w_test[i] = 1./num;
-
-//		if (debug) {
-//			cout << "[" << rank << "] ";
-//			for (int i=0; i<num; i++) cout << w_test[i] << " ";
-//			cout << c1 << " " << c2 << " ";
-//		}
-	
-		for (int i=0; i<num; i++) maps[i].interpolate(c1,c2,interpolated[i]);
-
-		merged.mergeFrom(interpolated,w_test);
-		merged.fit(measured,chi2_test,c_test[0]);
-#endif
-
-
 		int	type = 'R';
 
 		if (accept()) {
@@ -119,8 +91,8 @@ void MinChi::minimize(int debug)
 				Result	p;
 				p.chi2 = eval(w_test);
 				p.c[0] = c_test[0]; // XXX: sideeffect in eval() 
-				p.c[1] = w_test[num];
-				p.c[2] = w_test[num+1];
+				p.c[1] = maps[0].trueC1(w_test[num]);
+				p.c[2] = maps[0].trueC2(w_test[num+1]);
 				p.w = w_test;
 				p.w.resize(num);
 				p.step = steps;
@@ -134,16 +106,20 @@ void MinChi::minimize(int debug)
 		}
 
 		if (syncsteps && steps % syncsteps == 0) {
-			synchronize();
+			float	oldchi2 = results.getMinChi2();
+			synchronize(); 
+			if (oldchi2 > results.getMinChi2()) best_callback();
 
-			if (rank == 0) results.dump("result",steps,10);
+			if (rank == 0) results.dump("results",steps,10);
 		}
 
-		// if (debug) cout << "\tchi2=" << chi2_test << "\tchi=" << sqrt(chi2_test) << "\tc=" << c_cur[0] << endl;
-		// XXX: v pripade 'B' zapise taky jen current, tj. odkud se optimalizovalo
 		if (debug) writeTrace(type);
 	}
-	if (rank == 0) results.dump("result",steps,10);
+	synchronize();
+	if (rank == 0) {
+		results.dump("result",steps);
+		results.print(rank);
+	}
 }
 
 float MinChi::eval(vector<float> const & wc)

@@ -15,6 +15,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <IMP/saxs/Profile.h>
+#include <IMP/saxs/utility.h>
+
 #include "C12Map.h"
 
 // #define DEBUG_IPOL
@@ -44,13 +47,21 @@ C12Map::C12Map()
 int C12Map::setLazy(char const *p,char const *d)
 {
 	ifstream	in;
+/*
 	in.open(p);
 	if (in.fail()) {
 		cerr << "open: " << p << endl;
 		return 1;
 	}
 	in.close();
+*/
+	std::vector<IMP::Particles>	pv;
+	std::vector<std::string>	fnames;
 
+	IMP::saxs::read_pdb(p,fnames,pv);
+	imp_profile = new IMP::saxs::Profile(0,qmax,qmax/(size-1));
+	imp_profile->calculate_profile_partial(pv[0]);
+	
 	in.open(d);
 	if (in.fail()) {
 		cerr << "open: " << d << endl;
@@ -115,8 +126,8 @@ void C12Map::interpolate(float c1, float c2, Curve& out)
 	wc2 /= c2step;
 
 	float	w[2][2] = {
-		{ (1.-wc1)*(1.-wc2), (1.-wc1)*wc2 },
-		{ wc1*(1.-wc2), wc1*wc2 }
+		{ (1.F-wc1)*(1.F-wc2), (1.F-wc1)*wc2 },
+		{ wc1*(1.F-wc2), wc1*wc2 }
 	};
 
 	if (is_lazy) {
@@ -294,71 +305,29 @@ static void filetodir(const char *src,const char *dir,const char *dst)
 	delete [] buf;
 }
 
-/* XXX: call external foxs binary. 
- * Should be replaced with just the linked-in computation
- */
-
 void C12Map::lazyCurve(int ic1,int ic2)
 {
 	float	c1 = c1min + ic1*c1step,
 		c2 = c2min + ic2*c2step;
 
-	char * dirname = NULL;
-	do {
-		free(dirname);
-		dirname = tempnam(NULL,"saxs");
-	}
-	while (mkdir(dirname,0700));	// XXX: may loop forever
+	// sum_partial_profile
+	// cp Profile -> Curve
+	
+	imp_profile->sum_partial_profiles(c1,c2);
 
-	pid_t	child = fork();
-	int	stat;
+	const IMP_Eigen::VectorXf & profI = imp_profile->get_intensities(),
+	      profQ = imp_profile->get_qs();
 
-	assert(child >= 0);
+	std::vector<float> q(profQ.size());
+	std::vector<float> I(profI.size());
 
-	char	qmax_s[20],e_s[20],w_s[20],buf[500];
-	sprintf(qmax_s,"%f",qmax);
-	sprintf(e_s,"%f",c1);
-	sprintf(w_s,"%f",c2);
-
-	if (child) {
-		waitpid(child,&stat,0);
-		assert(WIFEXITED(stat) && WEXITSTATUS(stat) == 0);	// XXX
-	}
-	else {
-		filetodir(lazy_pdb,dirname,"model.pdb");
-		filetodir(lazy_profile,dirname,"profile.dat");
-
-		chdir(dirname);
-
-		int	logfile = open("foxs.log",O_WRONLY|O_CREAT|O_TRUNC,0644);
-		int	len = sprintf(buf,"# %s -q %s -e %s -w %s model.pdb profile.dat\n\n",
-				FOXS,qmax_s,e_s,w_s);
-
-		write(logfile,buf,len);
-
-		dup2(logfile,1);
-		dup2(logfile,2);
-		close(logfile);
-
-		execlp(FOXS,FOXS,
-			"-q",qmax_s,
-			"-e",e_s,
-			"-w",w_s,
-			"model.pdb",
-			"profile.dat",
-			NULL
-		      );
-		perror("exec()");
-		exit(1);
+	for (unsigned int i=0; i<q.size(); i++) {
+		q[i] = profQ[i];
+		I[i] = profI[i];
 	}
 
-	char	outname[PATH_MAX];
-
-	sprintf(outname,"%s/model_profile.dat",dirname);
-	curves[ic1][ic2].load(outname,false);
-
-	/* TODO: cleanup */
-	free(dirname);
+	curves[ic1][ic2].assign(q,I);
+	curves[ic1][ic2].alignScale(*measured);
 }
 
 
