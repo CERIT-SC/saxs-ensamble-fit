@@ -18,7 +18,7 @@ using namespace std;
 
 MinChi *MinChi::inst = 0;
 
-static void normalize(vector<float> & ww, int num)
+void MinChi::normalize(vector<float> & ww, int num)
 {
 	float w = 0;
 	for (int i=0; i<num; i++) w += ww[i];

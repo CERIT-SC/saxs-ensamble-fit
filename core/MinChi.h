@@ -20,10 +20,10 @@ class MinChi
 
 	const static int MAX_MIN_STEPS = 1000;
 
-	vector<Curve>   interpolated;
-	Curve		merged;
 
 protected:
+	vector<Curve>   interpolated;
+	Curve		merged;
 	int	num;
 	long	steps;
 	long	syncsteps;
@@ -60,6 +60,7 @@ public:
 		}
 
 	static MinChi *getInstance(void) { return MinChi::inst; }
+	static void normalize(vector<float> & ww, int num);
 
 	void setMaps(vector<C12Map> &m) { maps = m; }
 	void setMeasured(Curve &c) { measured = c; }
