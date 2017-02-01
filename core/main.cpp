@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 	}
 
 	if (num<=0 || !fmeasured) { usage(argv[0]); return 1; }
-	assert(num < 100); /* XXX: hardcoded %02d elsewhere */
+	/* not anymore: assert(num < 100); /* XXX: hardcoded %02d elsewhere */
 
 /* maximal step length (alltogether, not per dimension) */ 
 	alpha /= sqrt(2. + num);
