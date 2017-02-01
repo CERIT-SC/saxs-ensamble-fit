@@ -263,7 +263,19 @@ int main(int argc, char ** argv)
 	for (int i=0; i<dimreduce; i++) {
 		evec[i].resize(npar);
 		int	icol = (npar-i-1) * npar;
-		for (int j=0; j<npar; j++) evec[i][j] = z[icol+j];
+		float	dotp = 0, norm = 0.;
+		for (int j=0; j<npar; j++) {
+			float	e = evec[i][j] = z[icol+j];
+			norm += e*e;
+		}
+		norm = 1./sqrt(norm)/sqrt(1.*npar);;
+
+		cerr << "eigenvector[" << i << "]:" ;
+		for (int j=0; j<npar; j++) {
+			cerr << evec[i][j] * norm << " ";
+			dotp += evec[i][j] * norm;
+		}
+		cerr << endl << "dotprod with diagonal: " << dotp << endl;
 	}
 
 	for (int i=0; i<pt.size(); i++) 
