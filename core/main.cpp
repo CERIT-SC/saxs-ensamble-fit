@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
 {
 
 	const char *prefix = "";
-	int	num = -1, syncsteps = 0;
+	int	num = -1, syncsteps = 0, bignum = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
 	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL, GDMIN }	alg = STUNEL;
@@ -50,8 +50,9 @@ int main(int argc, char ** argv)
 	cout << endl;
 
 	int	opt;
-	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:Lp:z:")) != EOF) switch (opt) {
+	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:Lp:z:N")) != EOF) switch (opt) {
 		case 'n': num = atoi(optarg); break;
+		case 'N': bignum = 1; break;
 		case 'm': fmeasured = optarg; break;
 		case 'l': alpha = atof(optarg); break;
 		case 'b': beta = atof(optarg); break;
@@ -98,7 +99,11 @@ int main(int argc, char ** argv)
 		maps[i].setMeasured(measured);
 
 		if (lazy) {
-			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
+			if (num < 100 && !bignum)
+				snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
+			else 
+				snprintf(buf,sizeof buf,"%s%02d/%04d.pdb",prefix,(i+1)/100,i+1);
+
 			maps[i].setQMax(measured.getQMax());
 			maps[i].setSize(measured.getSize());
 			if (maps[i].setLazy(buf,fmeasured)) return 1;
