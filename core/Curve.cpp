@@ -213,11 +213,18 @@ void Curve::alignScale(Curve const &ref)
 	for (int i=0; i<newSize; i++) {
 		float	q = refQ[i];
 		for (; iq<size && rawQ[iq]<q; iq++);	
-		if (iq==0 || iq == size) abort();	/* XXX: will not happen frequently */
-
-		float	w = (q - rawQ[iq-1]) / (rawQ[iq] - rawQ[iq-1]);
-
-		newI[i] = (1.-w) * rawI[iq-1] + w * rawI[iq];
+		if (iq == 0) {
+			float 	k = (rawI[1]-rawI[0])/(rawQ[1]-rawQ[0]);
+			newI[i] = rawI[0] - k * (rawQ[0] - q);
+		}
+		else if (iq == size) {
+			float 	k = (rawI[size-1]-rawI[size-2])/(rawQ[size-1]-rawQ[size-2]);
+			newI[i] = rawI[size-1] + k * (q-rawQ[size-1]);
+		}
+		else {
+			float	w = (q - rawQ[iq-1]) / (rawQ[iq] - rawQ[iq-1]);
+			newI[i] = (1.-w) * rawI[iq-1] + w * rawI[iq];
+		}
 	}
 
 	rawQ = ref.getQ();
