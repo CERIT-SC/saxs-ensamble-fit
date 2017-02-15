@@ -81,12 +81,14 @@ void MinChi::minimize(int debug)
 				int	n = num+2, npt = 2*n+1, iprint = /* 2 */ 0, maxfun = MinChi::MAX_MIN_STEPS;
 				double 	rbeg = alpha, rend = fabs(chi2_test-chi2_best)/1000.; /* XXX: may not work well with randomwalk */
 
-				double	w[(npt+5)*(npt+n)+3*n*(n+5)/2];
+				double *w = new double[(npt+5)*(npt+n)+3*n*(n+5)/2];
 
 				for (int i=0; i<num+2; i++) x[i] = w_test[i];
 				bobyqa_(&n,&npt,x,xl,xu,&rbeg,&rend, &iprint,&maxfun,w);
 				for (int i=0; i<num+2; i++) w_test[i] = x[i];
 				normalize(w_test,num);
+
+				delete [] w;
 
 				Result	p;
 				p.chi2 = eval(w_test);

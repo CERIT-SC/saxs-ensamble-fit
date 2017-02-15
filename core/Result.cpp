@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
+#include <cstring>
 #include <errno.h>
 
 #include <mpi.h>

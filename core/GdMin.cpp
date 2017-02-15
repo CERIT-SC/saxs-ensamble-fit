@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
-
+#include <cstring>
 #include <mpi.h>
 
 #include "GdMin.h"
