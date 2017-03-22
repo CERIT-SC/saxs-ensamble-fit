@@ -20,6 +20,7 @@ with open(sys.argv[1],'r') as inf:
 			
 pol = np.polyfit(s,err,5)
 
+print '# originally', sys.argv[2], ', randomized by errors learned from', sys.argv[1]
 with open(sys.argv[2],'r') as inf:
 	for line in inf:
 		if line.startswith('#'):
