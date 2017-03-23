@@ -59,7 +59,10 @@ int C12Map::setLazy(char const *p,char const *d)
 	std::vector<std::string>	fnames;
 
 	IMP::saxs::read_pdb(p,fnames,pv);
-	imp_profile = new IMP::saxs::Profile(0,qmax,qmax/(size-1));
+
+	double	dstep = double(qmax)/size;
+
+	imp_profile = new IMP::saxs::Profile(0,dstep*(size-1),dstep);	/* XXX: qmax is also "+1" */
 	imp_profile->calculate_profile_partial(pv[0]);
 	
 	in.open(d);

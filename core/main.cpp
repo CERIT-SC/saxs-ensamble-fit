@@ -18,6 +18,7 @@
 #include "RandomWalk.h"
 #include "MonteCarlo.h"
 #include "STunel.h"
+#include "GdMin.h"
 
 #define FLOAT_MAX	9.99E37
 
@@ -29,10 +30,10 @@ int main(int argc, char ** argv)
 {
 
 	const char *prefix = "";
-	int	num = -1, syncsteps = 0;
+	int	num = -1, syncsteps = 0, bignum = 0;
 	long	maxsteps = 5000;
 	bool	debug = false, parsed = false, lazy = false;
-	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL }	alg = STUNEL;
+	enum { BRUTEFORCE, RANDOMWALK, MONTECARLO, STUNEL, GDMIN }	alg = STUNEL;
 
 	char	*fmeasured = 0;
 	const char *tprefix = ".";
@@ -40,6 +41,7 @@ int main(int argc, char ** argv)
 	MinChi	*min = 0;
 
 	float	alpha = 0.1,beta = 5e-3,gamma = 500;
+	long gdmin_set_size = -1;
 
 	MPI_Init(&argc,&argv);
 
@@ -48,8 +50,9 @@ int main(int argc, char ** argv)
 	cout << endl;
 
 	int	opt;
-	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:Lp:")) != EOF) switch (opt) {
+	while ((opt = getopt(argc,argv,"n:m:b:da:l:g:s:qy:t:Lp:z:N")) != EOF) switch (opt) {
 		case 'n': num = atoi(optarg); break;
+		case 'N': bignum = 1; break;
 		case 'm': fmeasured = optarg; break;
 		case 'l': alpha = atof(optarg); break;
 		case 'b': beta = atof(optarg); break;
@@ -60,6 +63,7 @@ int main(int argc, char ** argv)
 				  else if (strcasecmp(optarg,"random_walk")==0) alg = RANDOMWALK;
 				  else if (strcasecmp(optarg,"montecarlo")==0) alg = MONTECARLO;
 				  else if (strcasecmp(optarg,"stunnel")==0) alg = STUNEL;
+                  else if (strcasecmp(optarg, "gdmin") == 0) alg = GDMIN;
 				  else { usage(argv[0]); return 1; }
 			  break;
 		case 'q': parsed = true; break;
@@ -67,17 +71,19 @@ int main(int argc, char ** argv)
 		case 't': tprefix = optarg; break;
 		case 'L': lazy = true; break;
 		case 'p': prefix = optarg; break;
+		case 'z': gdmin_set_size = atol(optarg); break;
 		default: usage(argv[0]); return 1;
 	}
 
 	if (num<=0 || !fmeasured) { usage(argv[0]); return 1; }
-	assert(num < 100); /* XXX: hardcoded %02d elsewhere */
+	/* not anymore: assert(num < 100); /* XXX: hardcoded %02d elsewhere */
 
 /* maximal step length (alltogether, not per dimension) */ 
 	alpha /= sqrt(2. + num);
 
 /* MC scaling, 5e-3 step up accepted with 10% */
 	beta = - log(.1)/beta; 	
+	assert(gdmin_set_size<0 || (gdmin_set_size > 0 && alg == GDMIN));
 
 	Curve	measured;
 
@@ -93,7 +99,11 @@ int main(int argc, char ** argv)
 		maps[i].setMeasured(measured);
 
 		if (lazy) {
-			snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
+			if (num < 100 && !bignum)
+				snprintf(buf,sizeof buf,"%s%02d.pdb",prefix,i+1);
+			else 
+				snprintf(buf,sizeof buf,"%s%02d/%04d.pdb",prefix,(i+1)/100,i+1);
+
 			maps[i].setQMax(measured.getQMax());
 			maps[i].setSize(measured.getSize());
 			if (maps[i].setLazy(buf,fmeasured)) return 1;
@@ -138,6 +148,14 @@ int main(int argc, char ** argv)
 			min = t;
 			break;
 		}
+		case GDMIN: {
+			GdMin *g = new GdMin(measured, maps);
+			g->setParam(alpha);
+			g->setMaxSteps(maxsteps);
+			g->setSetSize(gdmin_set_size);
+			min = g;
+			break;
+		}
 		default:
 			cerr << "algorithm " << alg << " not implemented" << endl;
 			return 1;
@@ -174,7 +192,7 @@ static void usage(char const *me)
 		"	-g gamma	exponential factor in stochastic tunnelling (default 500)" << endl <<
 		"	-s steps	major optimization steps" << endl <<
 		"	-d 		debug" << endl <<
-		"	-a 		algorithm, one of bruteforce/random_walk/montecarlo/stunnel (default stunnel)" << endl <<
+		"	-a 		algorithm, one of bruteforce/random_walk/gdmin/montecarlo/stunnel (default stunnel)" << endl <<
 		"	-q		use pre-parsed maps of c1-c2 (output of parse-map)" << endl <<
 		"	-y syncsteps	steps between inter-processes synchronization (default 0 -- don't sync)" << endl <<
 		"	-t trace	prefix for trace files" << endl <<
