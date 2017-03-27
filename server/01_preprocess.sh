@@ -20,10 +20,18 @@ mkdir "${workdir}/structures"
 
 # check & copy SAXS data
 saxs_data="${request_dir}/saxs.dat"
-err_msg=$(./saxs_test.py ${saxs_data} 2>&1)
+delimiter='=============================================='
+
+# If we have a rich saxs file, cut out only the relevant part of it
+if grep -q "${delimiter}" "${saxs_data}"; then
+	sed -n "/${delimiter}/,/${delimiter}/{/${delimiter}/b;/${delimiter}/b;p}" "${saxs_data}" > "${workdir}/saxs.dat"
+else
+	cp "${saxs_data}" "${workdir}/saxs.dat"
+fi
+
+err_msg=$(./saxs_test.py "${workdir}/saxs.dat" 2>&1)
 [ $? -eq 0 ] || exit_error "${RETURN_USER_ERROR}" "SAXS data: ${err_msg}"
 
-cp "${saxs_data}" "${workdir}/saxs.dat"
 
 # extract NMR structures
 structures_file="${request_dir}/${STRUCTURES_FILE}"
