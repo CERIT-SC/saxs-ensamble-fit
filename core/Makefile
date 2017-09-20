@@ -1,21 +1,29 @@
 VPATH=.:../bobyqa
 
+UNAME=$(shell uname)
+
 CXX=mpicxx
 FC=mpif77
-FLIB?=-lgfortran
 OPT=-O2
-
-# Mac
-#IMP=../imp-2.6.1/build
 
 #BOOST=/opt/local
 #BOOSTINC=-I${BOOST}/include
 
+
 BOOSTOPT=-lboost_program_options
 LAPACK=-llapack
 
+ifeq ($(UNAME), Darwin)
+IMP=/usr/local
+IMPLIBDIR=${IMP}/lib
+BOOST=/opt/local
+BOOSTINC=-I${BOOST}/include
+FLIB=-L/opt/local/lib/libgcc -lgfortran.3
+else
 IMP=/software/imp/2.6.1
 IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
+FLIB?=-lgfortran
+endif
 
 SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp RandomWalk.cpp MonteCarlo.cpp STunel.cpp GdMin.cpp Result.cpp main.cpp calfun.cpp
 
