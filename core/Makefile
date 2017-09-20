@@ -14,8 +14,9 @@ OPT=-O2
 BOOSTOPT=-lboost_program_options
 LAPACK=-llapack
 
-IMP=/software/imp/2.6.1
-IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
+IMP?=/software/imp/2.6.1
+IMPARCH?=x86_64-linux-gnu
+IMPLIBDIR=${IMP}/lib/${IMPARCH}
 
 SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp RandomWalk.cpp MonteCarlo.cpp STunel.cpp GdMin.cpp Result.cpp main.cpp calfun.cpp
 
