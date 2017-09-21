@@ -1,22 +1,31 @@
 VPATH=.:../bobyqa
 
+UNAME=$(shell uname)
+
 CXX=mpicxx
 FC=mpif77
-FLIB?=-lgfortran
 OPT=-O2
-
-# Mac
-#IMP=../imp-2.6.1/build
 
 #BOOST=/opt/local
 #BOOSTINC=-I${BOOST}/include
 
+
 BOOSTOPT=-lboost_program_options
 LAPACK=-llapack
 
-IMP?=/software/imp/2.6.1
-IMPARCH?=x86_64-linux-gnu
-IMPLIBDIR=${IMP}/lib/${IMPARCH}
+ifeq ($(UNAME), Darwin)
+IMP=/usr/local
+IMPLIBDIR=${IMP}/lib
+BOOST=/opt/local
+BOOSTINC=-I${BOOST}/include
+FLIB=-L/opt/local/lib/libgcc -lgfortran.3
+EXTRA=-g3 -gdwarf-3
+# -isystem
+else
+IMP=/software/imp/2.6.1
+IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
+FLIB?=-lgfortran
+endif
 
 SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp RandomWalk.cpp MonteCarlo.cpp STunel.cpp GdMin.cpp Result.cpp main.cpp calfun.cpp
 
@@ -24,8 +33,8 @@ BOBJ:=bobyqa.o bobyqb.o prelim.o trsbox.o update.o altmov.o rescue.o
 
 OBJ:=${SRC:.cpp=.o}  ${BOBJ}
 
-CXXFLAGS=-g3 -gdwarf-3 ${OPT} -isystem ${IMP}/include ${BOOSTINC} -std=c++11
-FFLAGS=-g3 -gdwarf-3 ${OPT}
+CXXFLAGS=${EXTRA} ${OPT} -I${IMP}/include ${BOOSTINC} -std=c++11
+FFLAGS=${EXTRA} ${OPT}
 
 IMPLIB=-L${IMPLIBDIR} -Wl,-rpath ${IMPLIBDIR} -limp_saxs -limp_kernel 
 
