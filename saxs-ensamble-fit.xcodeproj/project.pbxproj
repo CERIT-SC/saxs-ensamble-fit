@@ -6,10 +6,17 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXFileReference section */
+		632220311F715527001AAB6D /* core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = core; sourceTree = "<group>"; };
+		632220321F715539001AAB6D /* bobyqa */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bobyqa; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
 /* Begin PBXGroup section */
 		632220261F7152C6001AAB6D = {
 			isa = PBXGroup;
 			children = (
+				632220321F715539001AAB6D /* bobyqa */,
+				632220311F715527001AAB6D /* core */,
 			);
 			sourceTree = "<group>";
 		};
@@ -23,6 +30,7 @@
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "/Users/ljocha/tmp/saxs-ensamble-fit/core";
 			dependencies = (
 			);
 			name = "saxs-ensamble-fit";
@@ -149,10 +157,14 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				FLIB = "-L/opt/local/lib/gcc6 -lgfortran";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				IMP = /usr/local;
+				IMPARCH = /;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
+				PATH = "/opt/local/bin:/opt/local/sbin:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/ljocha/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -161,8 +173,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FLIB = "-L/opt/local/lib/gcc6 -lgfortran";
+				IMP = /usr/local;
+				IMPARCH = /;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
+				PATH = "/opt/local/bin:/opt/local/sbin:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/ljocha/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -186,6 +202,7 @@
 				632220301F7152C6001AAB6D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
