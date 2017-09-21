@@ -19,6 +19,8 @@ IMPLIBDIR=${IMP}/lib
 BOOST=/opt/local
 BOOSTINC=-I${BOOST}/include
 FLIB=-L/opt/local/lib/libgcc -lgfortran.3
+EXTRA=-g3 -gdwarf-3
+# -isystem
 else
 IMP=/software/imp/2.6.1
 IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
@@ -31,8 +33,8 @@ BOBJ:=bobyqa.o bobyqb.o prelim.o trsbox.o update.o altmov.o rescue.o
 
 OBJ:=${SRC:.cpp=.o}  ${BOBJ}
 
-CXXFLAGS=-g3 -gdwarf-3 ${OPT} -isystem ${IMP}/include ${BOOSTINC} -std=c++11
-FFLAGS=-g3 -gdwarf-3 ${OPT}
+CXXFLAGS=${EXTRA} ${OPT} -I${IMP}/include ${BOOSTINC} -std=c++11
+FFLAGS=${EXTRA} ${OPT}
 
 IMPLIB=-L${IMPLIBDIR} -Wl,-rpath ${IMPLIBDIR} -limp_saxs -limp_kernel 
 
