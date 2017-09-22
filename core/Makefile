@@ -4,7 +4,6 @@ UNAME=$(shell uname)
 
 CXX=mpicxx
 FC=mpif77
-OPT=-O2
 
 #BOOST=/opt/local
 #BOOSTINC=-I${BOOST}/include
@@ -25,6 +24,11 @@ else
 IMP=/software/imp/2.6.1
 IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
 FLIB?=-lgfortran
+EXTRA=-g3
+endif
+
+ifndef (${DEBUG})
+OPT=-O2
 endif
 
 SRC:=Curve.cpp C12Map.cpp MinChi.cpp BruteForce.cpp RandomWalk.cpp MonteCarlo.cpp STunel.cpp GdMin.cpp Result.cpp main.cpp calfun.cpp
