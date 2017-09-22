@@ -27,7 +27,9 @@ FLIB?=-lgfortran
 EXTRA=-g3
 endif
 
-ifndef (${DEBUG})
+ifeq (${DEBUGGING_SYMBOLS}, YES)
+OPT=-O0 -g
+else
 OPT=-O2
 endif
 
