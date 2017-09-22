@@ -5,19 +5,15 @@ UNAME=$(shell uname)
 CXX=mpicxx
 FC=mpif77
 
-#BOOST=/opt/local
-#BOOSTINC=-I${BOOST}/include
-
-
 BOOSTOPT=-lboost_program_options
 LAPACK=-llapack
 
 ifeq ($(UNAME), Darwin)
 IMP=/usr/local
 IMPLIBDIR=${IMP}/lib
-BOOST=/opt/local
+BOOST?=/usr/local
 BOOSTINC=-I${BOOST}/include
-FLIB=-L/opt/local/lib/libgcc -lgfortran.3
+FLIB?=-L/usr/local/Cellar/gcc/7.2.0/lib/gcc/7 -lgfortran
 EXTRA=-g3 -gdwarf-3 
 # -isystem
 else
@@ -70,5 +66,11 @@ bobyqa-logreduce: %: %.o
 clean:
 	rm -f ${OBJ} ensamble-fit
 
+depend:
+	touch .depend
+	makedepend -f .depend -- $(CXXFLAGS) -- ${SRC}
+
+-include .depend
 
 # test
+# DO NOT DELETE

@@ -14,7 +14,7 @@ public:
 	vector<float>	w;
 	vector<float>	c;
 
-	Result() { c.resize(3); chi2 = 9.999999e37; }
+	Result() { c.resize(3); chi2 = 9.999999e37; step = 0; }
 
 	friend bool operator<(Result const &r1,Result const &r2) { return r1.chi2 < r2.chi2; }
 };
