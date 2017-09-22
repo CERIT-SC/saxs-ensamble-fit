@@ -20,6 +20,11 @@
 
 #include "C12Map.h"
 
+#ifndef IMPVERSION 
+/* XXX: assume 2.6.1 */
+#define IMPVERSION 20601
+#endif
+
 // #define DEBUG_IPOL
 
 char const *C12Map::FOXS;
@@ -58,7 +63,12 @@ int C12Map::setLazy(char const *p,char const *d)
 	std::vector<IMP::Particles>	pv;
 	std::vector<std::string>	fnames;
 
+#if IMPVERSION < 20800
 	IMP::saxs::read_pdb(p,fnames,pv);
+#else
+	IMP_NEW(IMP::Model, m, ());
+	IMP::saxs::read_pdb(m,p,fnames,pv);
+#endif
 
 	double	dstep = double(qmax)/size;
 
