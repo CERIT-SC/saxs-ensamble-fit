@@ -37,16 +37,35 @@
 			passBuildSettingsInEnvironment = 1;
 			productName = "saxs-ensamble-fit";
 		};
+		632220401F75416E001AAB6D /* ensemble-fit */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 632220411F75416E001AAB6D /* Build configuration list for PBXLegacyTarget "ensemble-fit" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = core;
+			dependencies = (
+			);
+			name = "ensemble-fit";
+			passBuildSettingsInEnvironment = 1;
+			productName = "ensemble-fit";
+		};
 /* End PBXLegacyTarget section */
 
 /* Begin PBXProject section */
 		632220271F7152C6001AAB6D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0830;
 				LastUpgradeCheck = 0830;
 				ORGANIZATIONNAME = "Ales Krenek";
 				TargetAttributes = {
 					6322202B1F7152C6001AAB6D = {
+						CreatedOnToolsVersion = 8.3.3;
+						ProvisioningStyle = Automatic;
+					};
+					632220401F75416E001AAB6D = {
 						CreatedOnToolsVersion = 8.3.3;
 						ProvisioningStyle = Automatic;
 					};
@@ -60,10 +79,12 @@
 				en,
 			);
 			mainGroup = 632220261F7152C6001AAB6D;
+			productRefGroup = 632220261F7152C6001AAB6D;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				6322202B1F7152C6001AAB6D /* saxs-ensamble-fit */,
+				632220401F75416E001AAB6D /* ensemble-fit */,
 			);
 		};
 /* End PBXProject section */
@@ -185,6 +206,29 @@
 			};
 			name = Release;
 		};
+		632220421F75416E001AAB6D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		632220431F75416E001AAB6D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -205,6 +249,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		632220411F75416E001AAB6D /* Build configuration list for PBXLegacyTarget "ensemble-fit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				632220421F75416E001AAB6D /* Debug */,
+				632220431F75416E001AAB6D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
