@@ -9,19 +9,22 @@ BOOSTOPT=-lboost_program_options
 LAPACK=-llapack
 
 ifeq ($(UNAME), Darwin)
-IMP=/usr/local
+IMPVERSION?=20800
+IMP?=/usr/local
 IMPLIBDIR=${IMP}/lib
 BOOST?=/usr/local
-BOOSTINC=-I${BOOST}/include
 FLIB?=-L/usr/local/Cellar/gcc/7.2.0/lib/gcc/7 -lgfortran
 EXTRA=-g3 -gdwarf-3 
 # -isystem
 else
-IMP=/software/imp/2.6.1
+IMPVERSION?=20700
+IMP?=/software/imp/2.7.0
 IMPLIBDIR=${IMP}/lib/x86_64-linux-gnu
 FLIB?=-lgfortran
 EXTRA=-g3
 endif
+
+BOOSTINC=-I${BOOST}/include
 
 ifeq (${DEBUGGING_SYMBOLS}, YES)
 OPT=-O0 -g
